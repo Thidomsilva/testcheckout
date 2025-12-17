@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 import { CreditCard, QrCode } from 'lucide-react';
+import React from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,15 +14,9 @@ import { Input } from '@/components/ui/input';
 import { Logo } from './logo';
 
 const formSchema = z.object({
-  amount: z.string().refine(
-    (value) => {
-      const num = parseFloat(value.replace('.', '').replace(',', '.'));
-      return !isNaN(num) && num > 0;
-    },
-    {
-      message: 'Por favor, insira um valor válido e maior que zero.',
-    }
-  ),
+  amount: z.coerce
+    .number({ invalid_type_error: 'Por favor, insira um valor válido.' })
+    .positive({ message: 'O valor deve ser maior que zero.' }),
 });
 
 export function PaymentForm() {
@@ -31,29 +26,37 @@ export function PaymentForm() {
     resolver: zodResolver(formSchema),
     mode: 'onChange',
     defaultValues: {
-      amount: '',
+      amount: 0,
     },
   });
+  
+  const [displayValue, setDisplayValue] = React.useState('0,00');
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let value = e.target.value;
-    value = value.replace(/\D/g, ''); // Remove non-digits
-    
-    // Pad with zeros if needed
-    value = value.padStart(3, '0');
+    const rawValue = e.target.value;
+    setDisplayValue(rawValue);
 
-    value = value.replace(/(\d+)(\d{2})$/, '$1,$2'); // Add comma for cents
-    if(value.length > 7) { // 1.234,56
-        value = value.replace(/^(\d+)(\d{3}),(\d{2})$/, '$1.$2,$3');
+    // Convert BRL string to a float number for the form
+    const numericValue = parseFloat(rawValue.replace(/\./g, '').replace(',', '.'));
+    if (!isNaN(numericValue)) {
+      form.setValue('amount', numericValue, { shouldValidate: true });
+    } else {
+        form.setValue('amount', 0, { shouldValidate: true });
     }
-    
-    form.setValue('amount', value);
+  };
+
+  const handleBlur = () => {
+    const value = form.getValues('amount');
+    const formatted = new Intl.NumberFormat('pt-BR', {
+      minimumFractionDigits: 2,
+    }).format(value || 0);
+    setDisplayValue(formatted);
   };
   
   const handlePaymentMethod = async (method: 'card' | 'pix') => {
     const isValid = await form.trigger('amount');
     if (isValid) {
-      const amountValue = form.getValues('amount').replace('.', '').replace(',', '.');
+      const amountValue = form.getValues('amount');
       const url = `/${method}-payment?amount=${amountValue}`;
       router.push(url);
     }
@@ -84,11 +87,22 @@ export function PaymentForm() {
                           R$
                         </span>
                         <Input
-                          {...field}
                           placeholder="0,00"
                           className="pl-12 text-3xl h-16 text-right font-bold"
                           onChange={handleAmountChange}
+                          onBlur={handleBlur}
+                          onFocus={(e) => {
+                            // When user focuses, show the raw number for editing
+                            if (e.target.value === '0,00') {
+                                setDisplayValue('');
+                            } else {
+                                const value = form.getValues('amount');
+                                setDisplayValue(String(value));
+                            }
+                          }}
+                          value={displayValue}
                           autoComplete="off"
+                          inputMode='decimal'
                         />
                       </div>
                     </FormControl>
