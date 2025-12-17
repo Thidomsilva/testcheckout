@@ -23,13 +23,18 @@ const formSchema = z.object({
   expiryDate: z.string().regex(expiryDateRegex, { message: 'Data inválida (MM/AA).' }).refine(val => {
     const match = val.match(expiryDateRegex);
     if (!match) return false;
-    const month = parseInt(match[1]);
-    const year = parseInt(`20${match[2]}`);
-    const expiry = new Date(year, month - 1);
+    const month = parseInt(match[1], 10);
+    const year = parseInt(`20${match[2]}`, 10);
+    
+    // Create a date for the last day of the expiry month
+    const expiryDate = new Date(year, month, 0);
+
     const now = new Date();
-    now.setHours(0,0,0,0);
-    const lastDayOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-    return expiry >= lastDayOfMonth;
+    // Set current date to the first day of the month to compare correctly
+    now.setDate(1);
+    now.setHours(0, 0, 0, 0);
+
+    return expiryDate >= now;
   }, { message: 'Cartão expirado.' }),
   cvc: z.string().min(3, 'CVC inválido.').max(4),
   customerName: z.string().min(3, { message: "Nome do cliente é obrigatório."}),
@@ -227,5 +232,3 @@ export default function CardPaymentPage() {
     </Suspense>
   )
 }
-
-    
