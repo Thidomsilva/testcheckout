@@ -51,15 +51,7 @@ function PixPaymentFlow() {
         setPixData(result);
 
         // A confirmação real do pagamento virá através do webhook da Payploc.
-        // O código abaixo foi removido para não simular mais a confirmação.
-        /*
-        const timer = setTimeout(() => {
-            const transactionId = `txn_${Date.now()}`;
-            router.push(`/confirmation?amount=${amount}&method=pix&transactionId=${transactionId}`);
-        }, 15000); // Increased time to allow for payment
-        
-        return () => clearTimeout(timer);
-        */
+        // O código de simulação foi removido.
 
       } catch (e: any) {
         setError(e.message || 'Não foi possível gerar o código Pix. Tente novamente.');
@@ -74,7 +66,8 @@ function PixPaymentFlow() {
     };
 
     generatePix();
-  }, [amount, router, toast]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [amount]);
   
   const handleCopy = () => {
     if (pixData?.copyPasteCode) {
