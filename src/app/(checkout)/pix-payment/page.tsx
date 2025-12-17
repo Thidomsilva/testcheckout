@@ -1,9 +1,12 @@
 'use client';
 
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useState } from 'react';
 import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ClipboardCopy, Check, Loader2 } from 'lucide-react';
+import { ClipboardCopy, Check, Loader2, QrCode } from 'lucide-react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import * as z from 'zod';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,77 +15,83 @@ import { useToast } from '@/hooks/use-toast';
 import { createPixPayment } from '@/app/actions/payploc';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Terminal } from 'lucide-react';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+
+const formSchema = z.object({
+  customerName: z.string().min(3, { message: 'Nome do cliente é obrigatório.' }),
+  customerCpf: z.string().refine((val) => val.replace(/[^\d]/g, '').length === 11, { message: 'CPF inválido. Insira 11 dígitos.' }),
+  customerEmail: z.string().email({ message: 'Email inválido.' }),
+});
 
 function PixPaymentFlow() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();
-  
+
   const [copied, setCopied] = useState(false);
   const [pixData, setPixData] = useState<{ qrCodeImage: string; copyPasteCode: string } | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const amount = searchParams.get('amount');
-  
-  useEffect(() => {
-    const generatePix = async () => {
-      const amountNumber = Number(amount);
-      if (!amount || isNaN(amountNumber) || amountNumber <= 0) {
-        setError('Valor de pagamento inválido.');
-        setIsLoading(false);
-        return;
-      }
+  const amountNumber = Number(amount);
+
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      customerName: 'Cliente Teste',
+      customerCpf: '123.456.789-01',
+      customerEmail: 'teste@exemplo.com',
+    },
+  });
+
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    if (!amount || isNaN(amountNumber) || amountNumber <= 0) {
+      setError('Valor de pagamento inválido.');
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      setError(null);
       
-      try {
-        setIsLoading(true);
-        setError(null);
-        // Mock customer data for now
-        const paymentInput = {
-          amount: amountNumber,
-          description: `Pagamento FlexiPay no valor de R$ ${amountNumber.toFixed(2)}`,
-          customer: {
-            name: 'Cliente Teste',
-            cpfCnpj: '12345678901', // This should be collected from the user
-            email: 'teste@exemplo.com',
-          },
-        };
-        const result = await createPixPayment(paymentInput);
-        setPixData(result);
+      const paymentInput = {
+        amount: amountNumber,
+        description: `Pagamento FlexiPay no valor de R$ ${amountNumber.toFixed(2)}`,
+        customer: {
+          name: values.customerName,
+          cpfCnpj: values.customerCpf.replace(/[^\d]/g, ''),
+          email: values.customerEmail,
+        },
+      };
+      const result = await createPixPayment(paymentInput);
+      setPixData(result);
+    } catch (e: any) {
+      setError(e.message || 'Não foi possível gerar o código Pix. Tente novamente.');
+      toast({
+        title: 'Erro ao gerar Pix',
+        description: e.message || 'Tente novamente mais tarde.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }
 
-        // A confirmação real do pagamento virá através do webhook da Payploc.
-        // O código de simulação foi removido.
-
-      } catch (e: any) {
-        setError(e.message || 'Não foi possível gerar o código Pix. Tente novamente.');
-        toast({
-          title: 'Erro ao gerar Pix',
-          description: e.message || 'Tente novamente mais tarde.',
-          variant: 'destructive',
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    generatePix();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [amount]);
-  
   const handleCopy = () => {
     if (pixData?.copyPasteCode) {
-        navigator.clipboard.writeText(pixData.copyPasteCode);
-        setCopied(true);
-        toast({ title: 'Código Pix copiado!' });
-        setTimeout(() => setCopied(false), 2000);
+      navigator.clipboard.writeText(pixData.copyPasteCode);
+      setCopied(true);
+      toast({ title: 'Código Pix copiado!' });
+      setTimeout(() => setCopied(false), 2000);
     }
   };
-  
-  const amountNumber = Number(amount);
+
   const formattedAmount = isNaN(amountNumber)
     ? 'R$ 0,00'
     : new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(amountNumber);
-  
+
   if (!amount || isNaN(amountNumber) || amountNumber <= 0) {
     return (
       <Card className="w-full shadow-lg">
@@ -94,30 +103,18 @@ function PixPaymentFlow() {
     );
   }
 
-  return (
-    <Card className="w-full shadow-lg text-center">
-      <CardHeader>
-        <CardTitle className="flex items-center justify-center gap-2 font-headline">
-          Pague com Pix
-        </CardTitle>
-        <CardDescription>
-          Valor: <span className="font-bold text-foreground">{formattedAmount}</span>
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="flex flex-col items-center gap-4">
-        {isLoading ? (
-            <div className='flex flex-col items-center justify-center gap-4 h-80'>
-                <Loader2 className="h-10 w-10 animate-spin text-primary" />
-                <p className='text-muted-foreground'>Gerando seu código Pix...</p>
-            </div>
-        ) : error ? (
-            <Alert variant="destructive">
-                <Terminal className="h-4 w-4" />
-                <AlertTitle>Erro</AlertTitle>
-                <AlertDescription>{error}</AlertDescription>
-            </Alert>
-        ) : pixData && (
-            <>
+  if (pixData) {
+    return (
+        <Card className="w-full shadow-lg text-center">
+            <CardHeader>
+                <CardTitle className="flex items-center justify-center gap-2 font-headline">
+                    Pague com Pix
+                </CardTitle>
+                <CardDescription>
+                    Valor: <span className="font-bold text-foreground">{formattedAmount}</span>
+                </CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-col items-center gap-4">
                 <div className="p-2 bg-white rounded-lg border">
                     <Image src={pixData.qrCodeImage} alt="QR Code Pix" width={200} height={200} />
                 </div>
@@ -140,8 +137,45 @@ function PixPaymentFlow() {
                 <div className="mt-4 text-sm text-accent-foreground animate-pulse font-medium">
                     Aguardando confirmação de pagamento...
                 </div>
-            </>
-        )}
+            </CardContent>
+        </Card>
+    )
+  }
+
+  return (
+    <Card className="w-full shadow-lg">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 font-headline"><QrCode /> Pagar com Pix</CardTitle>
+        <CardDescription>
+          Confirme seus dados para gerar o código Pix no valor de <span className="font-bold text-foreground">{formattedAmount}</span>.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            {error && (
+                <Alert variant="destructive">
+                    <Terminal className="h-4 w-4" />
+                    <AlertTitle>Erro</AlertTitle>
+                    <AlertDescription>{error}</AlertDescription>
+                </Alert>
+            )}
+            <FormField control={form.control} name="customerName" render={({ field }) => (
+                <FormItem><FormLabel>Nome Completo</FormLabel><FormControl><Input {...field} placeholder="Seu Nome" /></FormControl><FormMessage /></FormItem>
+            )}/>
+            <div className="grid grid-cols-2 gap-4">
+                <FormField control={form.control} name="customerCpf" render={({ field }) => (
+                    <FormItem><FormLabel>CPF</FormLabel><FormControl><Input {...field} placeholder="000.000.000-00" /></FormControl><FormMessage /></FormItem>
+                )}/>
+                <FormField control={form.control} name="customerEmail" render={({ field }) => (
+                    <FormItem><FormLabel>Email</FormLabel><FormControl><Input {...field} type="email" placeholder="seu@email.com" /></FormControl><FormMessage /></FormItem>
+                )}/>
+            </div>
+            <Button type="submit" className="w-full h-11" disabled={isLoading}>
+              {isLoading ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Gerando Pix...</>) : (`Gerar Pix`)}
+            </Button>
+          </form>
+        </Form>
       </CardContent>
     </Card>
   );
@@ -153,4 +187,4 @@ export default function PixPaymentPage() {
         <PixPaymentFlow />
       </Suspense>
     )
-  }
+}
