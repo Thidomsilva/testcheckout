@@ -145,7 +145,7 @@ function PixPaymentFlow() {
                     {copied ? 'Copiado!' : 'Copiar Código'}
                 </Button>
                 <div className="mt-4 text-sm text-accent-foreground animate-pulse font-medium">
-                    Aguardando confirmação de pagamento via webhook...
+                    Aguardando confirmação de pagamento...
                 </div>
             </>
         )}
