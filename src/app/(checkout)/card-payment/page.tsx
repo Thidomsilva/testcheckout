@@ -32,7 +32,7 @@ const formSchema = z.object({
     if (year === currentYear && month < currentMonth) return false;
     return true;
   }, { message: 'Cartão expirado.' }),
-  cvc: z.string().min(3, 'CVC inválido.').max(3, 'CVC inválido.'),
+  cvc: z.string().min(3, 'CVC inválido.').max(4, 'CVC inválido.'),
   customerName: z.string().min(3, { message: "Nome do cliente é obrigatório."}),
   customerCpf: z.string().length(14, { message: 'CPF inválido. Insira 11 dígitos.' }),
   customerEmail: z.string().email({ message: "Email inválido." }),
@@ -166,7 +166,7 @@ function CardPaymentForm() {
                     <FormField control={form.control} name="cvc" render={({ field }) => (
                       <FormItem>
                         <FormLabel>CVC</FormLabel>
-                        <FormControl><Input {...field} placeholder="123" maxLength={3} /></FormControl>
+                        <FormControl><Input {...field} placeholder="123" maxLength={4} /></FormControl>
                         <FormMessage />
                       </FormItem>
                     )}/>
