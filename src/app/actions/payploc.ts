@@ -65,7 +65,7 @@ const cardSchema = z.object({
     number: z.preprocess(onlyDigits, z.string().length(16, 'Número do cartão inválido. Deve conter 16 dígitos.')),
     expiryMonth: z.string().length(2, "Mês de validade inválido."),
     expiryYear: z.string().length(4, "Ano de validade inválido."),
-    ccv: z.string(),
+    ccv: z.string().min(3, 'CVC deve ter 3 dígitos.').max(4, 'CVC pode ter até 4 dígitos.'),
 });
 
 // Schema para criação de pagamento com cartão
@@ -103,6 +103,7 @@ export async function createCreditCardPayment(input: CreateCreditCardPaymentInpu
 
         if (!response.ok) {
             const errorData = await response.json();
+            console.error('Payploc Card Error Response:', errorData);
             throw new Error(errorData.message || 'Erro ao processar pagamento com cartão.');
         }
 
