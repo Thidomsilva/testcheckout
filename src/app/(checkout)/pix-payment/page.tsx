@@ -41,7 +41,7 @@ function PixPaymentFlow() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       customerName: 'Cliente Teste',
-      customerCpf: '123.456.789-01',
+      customerCpf: '12345678901',
       customerEmail: 'teste@exemplo.com',
     },
   });
@@ -61,7 +61,7 @@ function PixPaymentFlow() {
         description: `Pagamento FlexiPay no valor de R$ ${amountNumber.toFixed(2)}`,
         customer: {
           name: values.customerName,
-          cpfCnpj: values.customerCpf.replace(/[^\d]/g, ''),
+          cpfCnpj: values.customerCpf,
           email: values.customerEmail,
         },
       };
@@ -165,7 +165,7 @@ function PixPaymentFlow() {
             )}/>
             <div className="grid grid-cols-2 gap-4">
                 <FormField control={form.control} name="customerCpf" render={({ field }) => (
-                    <FormItem><FormLabel>CPF</FormLabel><FormControl><Input {...field} placeholder="000.000.000-00" /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel>CPF</FormLabel><FormControl><Input {...field} placeholder="Apenas números" maxLength={11} /></FormControl><FormMessage /></FormItem>
                 )}/>
                 <FormField control={form.control} name="customerEmail" render={({ field }) => (
                     <FormItem><FormLabel>Email</FormLabel><FormControl><Input {...field} type="email" placeholder="seu@email.com" /></FormControl><FormMessage /></FormItem>
