@@ -1,39 +1,85 @@
 'use client';
 
 import { Suspense, useEffect, useState } from 'react';
+import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { QrCode, ClipboardCopy, Check } from 'lucide-react';
+import { ClipboardCopy, Check, Loader2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
+import { createPixPayment } from '@/app/actions/payploc';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Terminal } from 'lucide-react';
 
 function PixPaymentFlow() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();
+  
   const [copied, setCopied] = useState(false);
+  const [pixData, setPixData] = useState<{ qrCodeImage: string; copyPasteCode: string } | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
   const amount = searchParams.get('amount');
   
-  const pixCode = '00020126360014br.gov.bcb.pix0114+5511999999999520400005303986540510.005802BR5913FlexiPay User6009SAO PAULO62070503***6304E2D5';
-
   useEffect(() => {
-    if (!amount) return;
-    
-    const timer = setTimeout(() => {
-      const transactionId = `txn_${Date.now()}`;
-      router.push(`/confirmation?amount=${amount}&method=pix&transactionId=${transactionId}`);
-    }, 8000);
+    const generatePix = async () => {
+      const amountNumber = Number(amount);
+      if (!amount || isNaN(amountNumber) || amountNumber <= 0) {
+        setError('Valor de pagamento inválido.');
+        setIsLoading(false);
+        return;
+      }
+      
+      try {
+        setIsLoading(true);
+        setError(null);
+        // Mock customer data for now
+        const paymentInput = {
+          amount: amountNumber,
+          description: `Pagamento FlexiPay no valor de R$ ${amountNumber.toFixed(2)}`,
+          customer: {
+            name: 'Cliente Teste',
+            cpfCnpj: '12345678901', // This should be collected from the user
+            email: 'teste@exemplo.com',
+          },
+        };
+        const result = await createPixPayment(paymentInput);
+        setPixData(result);
 
-    return () => clearTimeout(timer);
-  }, [amount, router]);
+        // Simulate waiting for payment confirmation
+        const timer = setTimeout(() => {
+            const transactionId = `txn_${Date.now()}`;
+            router.push(`/confirmation?amount=${amount}&method=pix&transactionId=${transactionId}`);
+        }, 15000); // Increased time to allow for payment
+        
+        return () => clearTimeout(timer);
+
+      } catch (e: any) {
+        setError(e.message || 'Não foi possível gerar o código Pix. Tente novamente.');
+        toast({
+          title: 'Erro ao gerar Pix',
+          description: e.message || 'Tente novamente mais tarde.',
+          variant: 'destructive',
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    generatePix();
+  }, [amount, router, toast]);
   
   const handleCopy = () => {
-    navigator.clipboard.writeText(pixCode);
-    setCopied(true);
-    toast({ title: 'Código Pix copiado!' });
-    setTimeout(() => setCopied(false), 2000);
+    if (pixData?.copyPasteCode) {
+        navigator.clipboard.writeText(pixData.copyPasteCode);
+        setCopied(true);
+        toast({ title: 'Código Pix copiado!' });
+        setTimeout(() => setCopied(false), 2000);
+    }
   };
   
   const amountNumber = Number(amount);
@@ -63,28 +109,43 @@ function PixPaymentFlow() {
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col items-center gap-4">
-        <div className="p-4 bg-white rounded-lg border">
-            <QrCode className="h-48 w-48 text-black" />
-        </div>
-        <p className="text-sm text-muted-foreground">Abra o app do seu banco e escaneie o QR Code.</p>
-        
-        <div className="w-full flex items-center gap-4 text-muted-foreground">
-            <Separator className="flex-1"/>
-            <span className="text-xs">OU</span>
-            <Separator className="flex-1"/>
-        </div>
-        
-        <p className="text-sm text-muted-foreground">Copie o código Pix:</p>
-        <div className="w-full p-3 border rounded-md bg-muted text-xs break-all text-muted-foreground text-left">
-            {pixCode}
-        </div>
-        <Button onClick={handleCopy} className="w-full h-11" variant="outline">
-            {copied ? <Check className="mr-2 h-4 w-4" /> : <ClipboardCopy className="mr-2 h-4 w-4" />}
-            {copied ? 'Copiado!' : 'Copiar Código'}
-        </Button>
-        <div className="mt-4 text-sm text-accent-foreground animate-pulse font-medium">
-            Aguardando confirmação de pagamento...
-        </div>
+        {isLoading ? (
+            <div className='flex flex-col items-center justify-center gap-4 h-80'>
+                <Loader2 className="h-10 w-10 animate-spin text-primary" />
+                <p className='text-muted-foreground'>Gerando seu código Pix...</p>
+            </div>
+        ) : error ? (
+            <Alert variant="destructive">
+                <Terminal className="h-4 w-4" />
+                <AlertTitle>Erro</AlertTitle>
+                <AlertDescription>{error}</AlertDescription>
+            </Alert>
+        ) : pixData && (
+            <>
+                <div className="p-2 bg-white rounded-lg border">
+                    <Image src={pixData.qrCodeImage} alt="QR Code Pix" width={200} height={200} />
+                </div>
+                <p className="text-sm text-muted-foreground">Abra o app do seu banco e escaneie o QR Code.</p>
+                
+                <div className="w-full flex items-center gap-4 text-muted-foreground">
+                    <Separator className="flex-1"/>
+                    <span className="text-xs">OU</span>
+                    <Separator className="flex-1"/>
+                </div>
+                
+                <p className="text-sm text-muted-foreground">Copie o código Pix:</p>
+                <div className="w-full p-3 border rounded-md bg-muted text-xs break-all text-muted-foreground text-left">
+                    {pixData.copyPasteCode}
+                </div>
+                <Button onClick={handleCopy} className="w-full h-11" variant="outline">
+                    {copied ? <Check className="mr-2 h-4 w-4" /> : <ClipboardCopy className="mr-2 h-4 w-4" />}
+                    {copied ? 'Copiado!' : 'Copiar Código'}
+                </Button>
+                <div className="mt-4 text-sm text-accent-foreground animate-pulse font-medium">
+                    Aguardando confirmação de pagamento...
+                </div>
+            </>
+        )}
       </CardContent>
     </Card>
   );

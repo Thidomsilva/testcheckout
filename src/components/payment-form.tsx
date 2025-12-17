@@ -25,32 +25,19 @@ export function PaymentForm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     mode: 'onChange',
-    defaultValues: {
-      amount: 0,
-    },
   });
   
-  const [displayValue, setDisplayValue] = React.useState('0,00');
-
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const rawValue = e.target.value;
-    setDisplayValue(rawValue);
+    const numericValue = parseFloat(rawValue.replace(/[^0-9]/g, '')) / 100;
 
-    // Convert BRL string to a float number for the form
-    const numericValue = parseFloat(rawValue.replace(/\./g, '').replace(',', '.'));
     if (!isNaN(numericValue)) {
-      form.setValue('amount', numericValue, { shouldValidate: true });
+        form.setValue('amount', numericValue, { shouldValidate: true });
+        e.target.value = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(numericValue);
     } else {
         form.setValue('amount', 0, { shouldValidate: true });
+        e.target.value = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(0);
     }
-  };
-
-  const handleBlur = () => {
-    const value = form.getValues('amount');
-    const formatted = new Intl.NumberFormat('pt-BR', {
-      minimumFractionDigits: 2,
-    }).format(value || 0);
-    setDisplayValue(formatted);
   };
   
   const handlePaymentMethod = async (method: 'card' | 'pix') => {
@@ -82,31 +69,15 @@ export function PaymentForm() {
                   <FormItem>
                     <FormLabel className="sr-only">Valor do Pagamento</FormLabel>
                     <FormControl>
-                      <div className="relative">
-                        <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-lg text-muted-foreground">
-                          R$
-                        </span>
                         <Input
-                          placeholder="0,00"
-                          className="pl-12 text-3xl h-16 text-right font-bold"
+                          placeholder="R$ 0,00"
+                          className="text-3xl h-16 text-center font-bold"
                           onChange={handleAmountChange}
-                          onBlur={handleBlur}
-                          onFocus={(e) => {
-                            // When user focuses, show the raw number for editing
-                            if (e.target.value === '0,00') {
-                                setDisplayValue('');
-                            } else {
-                                const value = form.getValues('amount');
-                                setDisplayValue(String(value));
-                            }
-                          }}
-                          value={displayValue}
                           autoComplete="off"
                           inputMode='decimal'
                         />
-                      </div>
                     </FormControl>
-                    <FormMessage />
+                    <FormMessage className='text-center'/>
                   </FormItem>
                 )}
               />
