@@ -76,7 +76,7 @@ const createCreditCardPaymentSchema = z.object({
     customer: customerSchema.extend({
         phone: z.preprocess(onlyDigits, z.string().min(10, 'Telefone inválido. Deve conter 10 ou 11 dígitos.')),
         postalCode: z.preprocess(onlyDigits, z.string().length(8, 'CEP inválido. Deve conter 8 dígitos.')),
-        addressNumber: z.string().min(1, 'Número do endereço é obrigatório.'),
+        addressNumber: z.coerce.number().positive('Número do endereço deve ser positivo.'),
     }),
     card: cardSchema,
 });
@@ -114,5 +114,3 @@ export async function createCreditCardPayment(input: CreateCreditCardPaymentInpu
         throw new Error(error.message || 'Falha na comunicação com o provedor de pagamento.');
     }
 }
-
-    
