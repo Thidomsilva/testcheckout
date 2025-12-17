@@ -85,7 +85,7 @@ const createCreditCardPaymentSchema = z.object({
     amount: z.number().positive(),
     description: z.string(),
     installments: z.literal(1),
-    customer: creditCardCustomerSchema, // CORREÇÃO CRÍTICA: Usar o schema correto para cliente de cartão de crédito.
+    customer: creditCardCustomerSchema,
     card: cardSchema,
 });
 
