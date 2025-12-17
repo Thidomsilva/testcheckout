@@ -27,9 +27,11 @@ const formSchema = z.object({
     const year = parseInt(`20${match[2]}`, 10);
     const now = new Date();
     const currentYear = now.getFullYear();
-    const currentMonth = now.getMonth() + 1;
-    if (year < currentYear) return false;
-    if (year === currentYear && month < currentMonth) return false;
+    const currentMonth = now.getMonth() + 1; // getMonth() é 0-indexed
+    
+    if (year < currentYear) return false; // Ano já passou
+    if (year === currentYear && month < currentMonth) return false; // Mês já passou no ano corrente
+    
     return true;
   }, { message: 'Cartão expirado.' }),
   cvc: z.string().min(3, 'CVC inválido.').max(4, 'CVC inválido.'),
@@ -166,7 +168,7 @@ function CardPaymentForm() {
                     <FormField control={form.control} name="cvc" render={({ field }) => (
                       <FormItem>
                         <FormLabel>CVC</FormLabel>
-                        <FormControl><Input {...field} placeholder="123" maxLength={4} /></FormControl>
+                        <FormControl><Input {...field} placeholder="123" maxLength={3} /></FormControl>
                         <FormMessage />
                       </FormItem>
                     )}/>

@@ -3,7 +3,7 @@
 import { z } from 'zod';
 
 const PAYPLOC_API_URL = 'https://sgdloeozxmbtsahygctf.supabase.co/functions/v1';
-const PAYPLOC_API_KEY = process.env.PAYPLOC_API_KEY || 'pp_test_sua_chave_aqui';
+const PAYPLOC_API_KEY = process.env.PAYPLOC_API_KEY;
 
 // Helper to transform and validate string with only digits
 const onlyDigits = (val: unknown) => String(val).replace(/[^\d]/g, '');
@@ -11,7 +11,7 @@ const onlyDigits = (val: unknown) => String(val).replace(/[^\d]/g, '');
 // Schema para os dados do cliente
 const customerSchema = z.object({
     name: z.string().min(1, "Nome é obrigatório."),
-    cpfCnpj: z.preprocess(onlyDigits, z.string().min(11, "CPF inválido. Deve conter 11 dígitos.").max(14, "CNPJ inválido. Deve conter 14 dígitos.")),
+    cpfCnpj: z.preprocess(onlyDigits, z.string().length(11, "CPF inválido. Deve conter 11 dígitos.")),
     email: z.string().email("Email inválido."),
 });
 
@@ -29,6 +29,10 @@ export async function createPixPayment(input: CreatePixPaymentInput) {
   if (!validation.success) {
     throw new Error(validation.error.errors.map(e => e.message).join(', '));
   }
+  
+  if (!PAYPLOC_API_KEY) {
+    throw new Error('A chave da API da Payploc não está configurada.');
+  }
 
   try {
     const response = await fetch(`${PAYPLOC_API_URL}/create-pix-payment`, {
@@ -42,6 +46,7 @@ export async function createPixPayment(input: CreatePixPaymentInput) {
 
     if (!response.ok) {
         const errorData = await response.json();
+        console.error('Payploc PIX Error Response:', errorData);
         throw new Error(errorData.message || 'Erro ao criar pagamento PIX.');
     }
     
@@ -65,7 +70,7 @@ const cardSchema = z.object({
     number: z.preprocess(onlyDigits, z.string().length(16, 'Número do cartão inválido. Deve conter 16 dígitos.')),
     expiryMonth: z.string().length(2, "Mês de validade inválido."),
     expiryYear: z.string().length(4, "Ano de validade inválido."),
-    ccv: z.string().min(3, 'CVC deve ter 3 dígitos.').max(4, 'CVC pode ter até 4 dígitos.'),
+    ccv: z.string().min(3, 'CVC deve ter 3 ou 4 dígitos.').max(4, 'CVC deve ter 3 ou 4 dígitos.'),
 });
 
 // Schema para criação de pagamento com cartão
@@ -86,9 +91,12 @@ export type CreateCreditCardPaymentInput = z.infer<typeof createCreditCardPaymen
 export async function createCreditCardPayment(input: CreateCreditCardPaymentInput) {
     const validation = createCreditCardPaymentSchema.safeParse(input);
     if (!validation.success) {
-        // Log do erro detalhado no servidor para depuração
         console.error("Erro de validação do Zod:", validation.error.flatten());
         throw new Error(validation.error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join('; '));
+    }
+    
+    if (!PAYPLOC_API_KEY) {
+        throw new Error('A chave da API da Payploc não está configurada.');
     }
     
     try {
