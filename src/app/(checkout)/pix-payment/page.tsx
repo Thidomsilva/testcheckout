@@ -50,13 +50,16 @@ function PixPaymentFlow() {
         const result = await createPixPayment(paymentInput);
         setPixData(result);
 
-        // Simulate waiting for payment confirmation
+        // A confirmação real do pagamento virá através do webhook da Payploc.
+        // O código abaixo foi removido para não simular mais a confirmação.
+        /*
         const timer = setTimeout(() => {
             const transactionId = `txn_${Date.now()}`;
             router.push(`/confirmation?amount=${amount}&method=pix&transactionId=${transactionId}`);
         }, 15000); // Increased time to allow for payment
         
         return () => clearTimeout(timer);
+        */
 
       } catch (e: any) {
         setError(e.message || 'Não foi possível gerar o código Pix. Tente novamente.');
@@ -142,7 +145,7 @@ function PixPaymentFlow() {
                     {copied ? 'Copiado!' : 'Copiar Código'}
                 </Button>
                 <div className="mt-4 text-sm text-accent-foreground animate-pulse font-medium">
-                    Aguardando confirmação de pagamento...
+                    Aguardando confirmação de pagamento via webhook...
                 </div>
             </>
         )}
