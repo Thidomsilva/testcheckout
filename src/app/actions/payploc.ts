@@ -8,8 +8,8 @@ const PAYPLOC_API_KEY = process.env.PAYPLOC_API_KEY;
 // Helper to transform and validate string with only digits
 const onlyDigits = (val: unknown) => String(val).replace(/[^\d]/g, '');
 
-// Schema para os dados do cliente
-const customerSchema = z.object({
+// Schema para os dados do cliente para PIX
+const pixCustomerSchema = z.object({
     name: z.string().min(1, "Nome é obrigatório."),
     cpfCnpj: z.preprocess(onlyDigits, z.string().length(11, "CPF inválido. Deve conter 11 dígitos.")),
     email: z.string().email("Email inválido."),
@@ -19,7 +19,7 @@ const customerSchema = z.object({
 const createPixPaymentSchema = z.object({
   amount: z.number().positive(),
   description: z.string(),
-  customer: customerSchema,
+  customer: pixCustomerSchema,
 });
 
 export type CreatePixPaymentInput = z.infer<typeof createPixPaymentSchema>;
@@ -73,16 +73,19 @@ const cardSchema = z.object({
     ccv: z.string().min(3, 'CVC deve ter 3 ou 4 dígitos.').max(4, 'CVC deve ter 3 ou 4 dígitos.'),
 });
 
+// Schema para dados do cliente para Cartão de Crédito
+const creditCardCustomerSchema = pixCustomerSchema.extend({
+    phone: z.preprocess(onlyDigits, z.string().min(10, 'Telefone inválido. Deve conter 10 ou 11 dígitos.')),
+    postalCode: z.preprocess(onlyDigits, z.string().length(8, 'CEP inválido. Deve conter 8 dígitos.')),
+    addressNumber: z.preprocess(val => String(val), z.string().min(1, 'Número do endereço é obrigatório.')),
+});
+
 // Schema para criação de pagamento com cartão
 const createCreditCardPaymentSchema = z.object({
     amount: z.number().positive(),
     description: z.string(),
     installments: z.literal(1),
-    customer: customerSchema.extend({
-        phone: z.preprocess(onlyDigits, z.string().min(10, 'Telefone inválido. Deve conter 10 ou 11 dígitos.')),
-        postalCode: z.preprocess(onlyDigits, z.string().length(8, 'CEP inválido. Deve conter 8 dígitos.')),
-        addressNumber: z.coerce.number().positive('Número do endereço deve ser positivo.'),
-    }),
+    customer: creditCardCustomerSchema,
     card: cardSchema,
 });
 

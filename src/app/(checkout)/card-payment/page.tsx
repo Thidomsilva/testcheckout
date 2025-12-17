@@ -29,8 +29,8 @@ const formSchema = z.object({
     const currentYear = now.getFullYear();
     const currentMonth = now.getMonth() + 1; // getMonth() é 0-indexed
     
-    if (year < currentYear) return false; // Ano já passou
-    if (year === currentYear && month < currentMonth) return false; // Mês já passou no ano corrente
+    if (year < currentYear) return false;
+    if (year === currentYear && month < currentMonth) return false;
     
     return true;
   }, { message: 'Cartão expirado.' }),
@@ -85,7 +85,7 @@ function CardPaymentForm() {
             email: values.customerEmail,
             phone: values.customerPhone,
             postalCode: values.customerPostalCode,
-            addressNumber: Number(values.customerAddressNumber),
+            addressNumber: values.customerAddressNumber,
         },
         card: {
             holderName: values.cardholderName,
@@ -168,7 +168,7 @@ function CardPaymentForm() {
                     <FormField control={form.control} name="cvc" render={({ field }) => (
                       <FormItem>
                         <FormLabel>CVC</FormLabel>
-                        <FormControl><Input {...field} placeholder="123" maxLength={3} /></FormControl>
+                        <FormControl><Input {...field} placeholder="123" maxLength={4} /></FormControl>
                         <FormMessage />
                       </FormItem>
                     )}/>
