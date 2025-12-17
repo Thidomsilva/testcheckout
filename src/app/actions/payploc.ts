@@ -5,10 +5,13 @@ import { z } from 'zod';
 const PAYPLOC_API_URL = 'https://sgdloeozxmbtsahygctf.supabase.co/functions/v1';
 const PAYPLOC_API_KEY = process.env.PAYPLOC_API_KEY || 'pp_test_sua_chave_aqui';
 
+// Helper to transform and validate string with only digits
+const onlyDigits = (val: unknown) => String(val).replace(/[^\d]/g, '');
+
 // Schema para os dados do cliente
 const customerSchema = z.object({
-    name: z.string(),
-    cpfCnpj: z.string().length(11, "CPF inválido."),
+    name: z.string().min(1, "Nome é obrigatório."),
+    cpfCnpj: z.preprocess(onlyDigits, z.string().length(11, "CPF inválido.")),
     email: z.string().email("Email inválido."),
 });
 
@@ -60,7 +63,7 @@ export async function createPixPayment(input: CreatePixPaymentInput) {
 // Schema para os dados do cartão de crédito
 const cardSchema = z.object({
     holderName: z.string(),
-    number: z.string(),
+    number: z.preprocess(onlyDigits, z.string().length(16, 'Número do cartão inválido.')),
     expiryMonth: z.string(),
     expiryYear: z.string(),
     ccv: z.string(),
@@ -72,9 +75,9 @@ const createCreditCardPaymentSchema = z.object({
     description: z.string(),
     installments: z.literal(1),
     customer: customerSchema.extend({
-        phone: z.string(),
-        postalCode: z.string(),
-        addressNumber: z.string(),
+        phone: z.preprocess(onlyDigits, z.string().min(10, 'Telefone inválido.')),
+        postalCode: z.preprocess(onlyDigits, z.string().length(8, 'CEP inválido.')),
+        addressNumber: z.string().min(1, 'Número do endereço é obrigatório.'),
     }),
     card: cardSchema,
 });

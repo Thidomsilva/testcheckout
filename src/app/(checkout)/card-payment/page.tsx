@@ -15,11 +15,11 @@ import { useToast } from '@/hooks/use-toast';
 import { createCreditCardPayment } from '@/app/actions/payploc';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
+const onlyDigits = (val: string) => val.replace(/[^\d]/g, '');
+
 const formSchema = z.object({
   cardholderName: z.string().min(3, { message: 'Nome deve ter pelo menos 3 caracteres.' }),
-  cardNumber: z.string().refine((val) => val.replace(/\s/g, '').length === 16 && /^\d+$/.test(val.replace(/\s/g, '')), {
-    message: 'Número do cartão inválido. Insira 16 dígitos.',
-  }),
+  cardNumber: z.string().transform(onlyDigits).pipe(z.string().length(16, 'Número do cartão inválido. Insira 16 dígitos.')),
   expiryDate: z.string().regex(/^(0[1-9]|1[0-2])\/\d{2}$/, { message: 'Data inválida (MM/AA).' }).refine(val => {
     const [month, year] = val.split('/');
     const expiryDate = new Date(parseInt(`20${year}`), parseInt(month) - 1);
@@ -29,10 +29,10 @@ const formSchema = z.object({
   }, { message: 'Cartão expirado.' }),
   cvc: z.string().regex(/^\d{3,4}$/, { message: 'CVC inválido.' }),
   customerName: z.string().min(3, { message: "Nome do cliente é obrigatório."}),
-  customerCpf: z.string().refine(val => val.replace(/[^\d]/g, '').length === 11, { message: "CPF inválido. Insira 11 dígitos."}),
+  customerCpf: z.string().transform(onlyDigits).pipe(z.string().length(11, "CPF inválido. Insira 11 dígitos.")),
   customerEmail: z.string().email({ message: "Email inválido." }),
-  customerPhone: z.string().refine(val => val.replace(/[^\d]/g, '').length >= 10, { message: "Telefone inválido."}),
-  customerPostalCode: z.string().refine(val => val.replace(/[^\d]/g, '').length === 8, { message: "CEP inválido. Insira 8 dígitos."}),
+  customerPhone: z.string().transform(onlyDigits).pipe(z.string().min(10, "Telefone inválido.")),
+  customerPostalCode: z.string().transform(onlyDigits).pipe(z.string().length(8, "CEP inválido. Insira 8 dígitos.")),
   customerAddressNumber: z.string().min(1, { message: "Número do endereço é obrigatório."}),
 });
 
@@ -74,15 +74,15 @@ function CardPaymentForm() {
         installments: 1,
         customer: {
             name: values.customerName,
-            cpfCnpj: values.customerCpf.replace(/[^\d]/g, ''),
+            cpfCnpj: values.customerCpf,
             email: values.customerEmail,
-            phone: values.customerPhone.replace(/[^\d]/g, ''),
-            postalCode: values.customerPostalCode.replace(/[^\d]/g, ''),
+            phone: values.customerPhone,
+            postalCode: values.customerPostalCode,
             addressNumber: values.customerAddressNumber,
         },
         card: {
             holderName: values.cardholderName,
-            number: values.cardNumber.replace(/\s/g, ''),
+            number: values.cardNumber,
             expiryMonth: expiryMonth,
             expiryYear: `20${expiryYear}`,
             ccv: values.cvc,
