@@ -26,17 +26,18 @@ const formSchema = z.object({
     const month = parseInt(match[1], 10);
     const year = parseInt(`20${match[2]}`, 10);
     const now = new Date();
+    now.setHours(23, 59, 59, 999); // Final do dia
     const currentYear = now.getFullYear();
-    const currentMonth = now.getMonth() + 1; // getMonth() é 0-indexed
+    const currentMonth = now.getMonth() + 1;
     
     if (year < currentYear) return false;
     if (year === currentYear && month < currentMonth) return false;
     
     return true;
   }, { message: 'Cartão expirado.' }),
-  cvc: z.string().min(3, 'CVC inválido.').max(4, 'CVC inválido.'),
+  cvc: z.string().min(3, 'CVC inválido.').max(3, 'CVC inválido.'),
   customerName: z.string().min(3, { message: "Nome do cliente é obrigatório."}),
-  customerCpf: z.string({ required_error: 'CPF é obrigatório.'}),
+  customerCpf: z.string().min(1, { message: 'CPF é obrigatório.'}),
   customerEmail: z.string().email({ message: "Email inválido." }),
   customerPhone: z.string().min(10, { message: 'Telefone inválido.' }),
   customerPostalCode: z.string().min(8, { message: 'CEP inválido. Insira 8 dígitos.' }),
@@ -73,6 +74,7 @@ function CardPaymentForm() {
     }
     
     const [expiryMonth, expiryYear] = values.expiryDate.split('/');
+    const cleanCpf = values.customerCpf.replace(/[^\d]/g, '');
 
     try {
       const result = await createCreditCardPayment({
@@ -81,7 +83,7 @@ function CardPaymentForm() {
         installments: 1,
         customer: {
             name: values.customerName,
-            cpfCnpj: values.customerCpf,
+            cpfCnpj: cleanCpf,
             email: values.customerEmail,
             phone: values.customerPhone,
             postalCode: values.customerPostalCode,
@@ -168,7 +170,7 @@ function CardPaymentForm() {
                     <FormField control={form.control} name="cvc" render={({ field }) => (
                       <FormItem>
                         <FormLabel>CVC</FormLabel>
-                        <FormControl><Input {...field} placeholder="123" maxLength={4} /></FormControl>
+                        <FormControl><Input {...field} placeholder="123" maxLength={3} /></FormControl>
                         <FormMessage />
                       </FormItem>
                     )}/>

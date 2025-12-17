@@ -70,11 +70,14 @@ const cardSchema = z.object({
     number: z.preprocess(onlyDigits, z.string().length(16, 'Número do cartão inválido. Deve conter 16 dígitos.')),
     expiryMonth: z.string().length(2, "Mês de validade inválido."),
     expiryYear: z.string().length(4, "Ano de validade inválido."),
-    ccv: z.string().min(3, 'CVC deve ter 3 ou 4 dígitos.').max(4, 'CVC deve ter 3 ou 4 dígitos.'),
+    ccv: z.string().min(3, 'CVC deve ter 3 dígitos.').max(3, 'CVC deve ter 3 dígitos.'),
 });
 
 // Schema para dados do cliente para Cartão de Crédito
-const creditCardCustomerSchema = pixCustomerSchema.extend({
+const creditCardCustomerSchema = z.object({
+    name: z.string().min(1, "Nome é obrigatório."),
+    cpfCnpj: z.string().length(11, "CPF inválido. Deve conter 11 dígitos."),
+    email: z.string().email("Email inválido."),
     phone: z.preprocess(onlyDigits, z.string().min(10, 'Telefone inválido. Deve conter 10 ou 11 dígitos.')),
     postalCode: z.preprocess(onlyDigits, z.string().length(8, 'CEP inválido. Deve conter 8 dígitos.')),
     addressNumber: z.preprocess(val => String(val), z.string().min(1, 'Número do endereço é obrigatório.')),
@@ -85,7 +88,7 @@ const createCreditCardPaymentSchema = z.object({
     amount: z.number().positive(),
     description: z.string(),
     installments: z.literal(1),
-    customer: creditCardCustomerSchema, // CORREÇÃO: Usar o schema estendido
+    customer: creditCardCustomerSchema,
     card: cardSchema,
 });
 
