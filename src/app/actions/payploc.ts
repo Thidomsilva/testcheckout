@@ -114,3 +114,5 @@ export async function createCreditCardPayment(input: CreateCreditCardPaymentInpu
         throw new Error(error.message || 'Falha na comunicação com o provedor de pagamento.');
     }
 }
+
+    

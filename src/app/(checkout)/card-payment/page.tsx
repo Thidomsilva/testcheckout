@@ -179,7 +179,17 @@ function CardPaymentForm() {
                     )}/>
                     <div className="grid grid-cols-2 gap-4">
                         <FormField control={form.control} name="customerCpf" render={({ field }) => (
-                            <FormItem><FormLabel>CPF</FormLabel><FormControl><Input {...field} placeholder="000.000.000-00" /></FormControl><FormMessage /></FormItem>
+                            <FormItem>
+                              <FormLabel>CPF</FormLabel>
+                              <FormControl><Input {...field} placeholder="000.000.000-00" onChange={e => {
+                                let value = e.target.value.replace(/\D/g, '').substring(0, 11);
+                                value = value.replace(/(\d{3})(\d)/, '$1.$2');
+                                value = value.replace(/(\d{3})(\d)/, '$1.$2');
+                                value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+                                field.onChange(value);
+                              }}/></FormControl>
+                              <FormMessage />
+                            </FormItem>
                         )}/>
                         <FormField control={form.control} name="customerEmail" render={({ field }) => (
                            <FormItem><FormLabel>Email</FormLabel><FormControl><Input {...field} type="email" placeholder="seu@email.com" /></FormControl><FormMessage /></FormItem>
@@ -217,3 +227,5 @@ export default function CardPaymentPage() {
     </Suspense>
   )
 }
+
+    
