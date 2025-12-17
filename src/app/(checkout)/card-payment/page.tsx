@@ -50,10 +50,10 @@ function CardPaymentForm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      cardholderName: '',
-      cardNumber: '',
-      expiryDate: '',
-      cvc: '',
+      cardholderName: 'CLIENTE TESTE',
+      cardNumber: '4111 1111 1111 1111',
+      expiryDate: '12/30',
+      cvc: '123',
       customerName: 'Cliente Teste',
       customerCpf: '123.456.789-01',
       customerEmail: 'teste@exemplo.com',

@@ -63,8 +63,8 @@ export async function createPixPayment(input: CreatePixPaymentInput) {
 const cardSchema = z.object({
     holderName: z.string(),
     number: z.preprocess(onlyDigits, z.string().length(16, 'Número do cartão inválido. Deve conter 16 dígitos.')),
-    expiryMonth: z.preprocess(onlyDigits, z.string().length(2, "Mês de validade inválido.")),
-    expiryYear: z.preprocess(onlyDigits, z.string().length(4, "Ano de validade inválido.")),
+    expiryMonth: z.string().length(2, "Mês de validade inválido."),
+    expiryYear: z.string().length(4, "Ano de validade inválido."),
     ccv: z.string(),
 });
 
