@@ -11,7 +11,7 @@ const onlyDigits = (val: unknown) => String(val).replace(/[^\d]/g, '');
 // Schema para os dados do cliente
 const customerSchema = z.object({
     name: z.string().min(1, "Nome é obrigatório."),
-    cpfCnpj: z.preprocess(onlyDigits, z.string().length(11, "CPF inválido.")),
+    cpfCnpj: z.preprocess(onlyDigits, z.string().length(11, "CPF inválido. Deve conter 11 dígitos.")),
     email: z.string().email("Email inválido."),
 });
 
@@ -47,7 +47,6 @@ export async function createPixPayment(input: CreatePixPaymentInput) {
     
     const data = await response.json();
 
-    // A API retorna o código do QR, não a imagem. Usamos uma API para gerar a imagem.
     const qrCodeImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(data.pixCopyPaste)}`;
 
     return {
@@ -63,7 +62,7 @@ export async function createPixPayment(input: CreatePixPaymentInput) {
 // Schema para os dados do cartão de crédito
 const cardSchema = z.object({
     holderName: z.string(),
-    number: z.preprocess(onlyDigits, z.string().length(16, 'Número do cartão inválido.')),
+    number: z.preprocess(onlyDigits, z.string().length(16, 'Número do cartão inválido. Deve conter 16 dígitos.')),
     expiryMonth: z.string(),
     expiryYear: z.string(),
     ccv: z.string(),
@@ -75,8 +74,8 @@ const createCreditCardPaymentSchema = z.object({
     description: z.string(),
     installments: z.literal(1),
     customer: customerSchema.extend({
-        phone: z.preprocess(onlyDigits, z.string().min(10, 'Telefone inválido.')),
-        postalCode: z.preprocess(onlyDigits, z.string().length(8, 'CEP inválido.')),
+        phone: z.preprocess(onlyDigits, z.string().min(10, 'Telefone inválido. Deve conter 10 ou 11 dígitos.')),
+        postalCode: z.preprocess(onlyDigits, z.string().length(8, 'CEP inválido. Deve conter 8 dígitos.')),
         addressNumber: z.string().min(1, 'Número do endereço é obrigatório.'),
     }),
     card: cardSchema,
