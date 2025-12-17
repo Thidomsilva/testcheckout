@@ -29,10 +29,10 @@ const formSchema = z.object({
   }, { message: 'Cartão expirado.' }),
   cvc: z.string().regex(/^\d{3,4}$/, { message: 'CVC inválido.' }),
   customerName: z.string().min(3, { message: "Nome do cliente é obrigatório."}),
-  customerCpf: z.string().length(11, { message: "CPF inválido. Insira 11 dígitos."}),
+  customerCpf: z.string().refine(val => val.replace(/[^\d]/g, '').length === 11, { message: "CPF inválido. Insira 11 dígitos."}),
   customerEmail: z.string().email({ message: "Email inválido." }),
-  customerPhone: z.string().min(10, { message: "Telefone inválido."}),
-  customerPostalCode: z.string().length(8, { message: "CEP inválido. Insira 8 dígitos."}),
+  customerPhone: z.string().refine(val => val.replace(/[^\d]/g, '').length >= 10, { message: "Telefone inválido."}),
+  customerPostalCode: z.string().refine(val => val.replace(/[^\d]/g, '').length === 8, { message: "CEP inválido. Insira 8 dígitos."}),
   customerAddressNumber: z.string().min(1, { message: "Número do endereço é obrigatório."}),
 });
 
@@ -50,10 +50,10 @@ function CardPaymentForm() {
       expiryDate: '',
       cvc: '',
       customerName: 'Cliente Teste',
-      customerCpf: '12345678901',
+      customerCpf: '123.456.789-01',
       customerEmail: 'teste@exemplo.com',
-      customerPhone: '11999999999',
-      customerPostalCode: '01310100',
+      customerPhone: '(11) 99999-9999',
+      customerPostalCode: '01310-100',
       customerAddressNumber: '100',
     },
   });
@@ -74,10 +74,10 @@ function CardPaymentForm() {
         installments: 1,
         customer: {
             name: values.customerName,
-            cpfCnpj: values.customerCpf,
+            cpfCnpj: values.customerCpf.replace(/[^\d]/g, ''),
             email: values.customerEmail,
-            phone: values.customerPhone,
-            postalCode: values.customerPostalCode,
+            phone: values.customerPhone.replace(/[^\d]/g, ''),
+            postalCode: values.customerPostalCode.replace(/[^\d]/g, ''),
             addressNumber: values.customerAddressNumber,
         },
         card: {
@@ -213,3 +213,5 @@ export default function CardPaymentPage() {
     </Suspense>
   )
 }
+
+    
