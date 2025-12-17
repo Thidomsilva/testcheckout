@@ -1,19 +1,42 @@
 import { NextRequest, NextResponse } from 'next/server';
+import crypto from 'crypto';
 
 /**
  * Endpoint para receber webhooks da Payploc.
  * A Payploc enviará atualizações de status de transação para esta URL.
  */
 export async function POST(req: NextRequest) {
+  const webhookSecret = process.env.PAYPLOC_WEBHOOK_SECRET;
+  if (!webhookSecret) {
+    console.error('PAYPLOC_WEBHOOK_SECRET não está configurado.');
+    // É importante retornar 200 para não indicar o erro de configuração ao mundo externo
+    return NextResponse.json({ received: true, error: 'Internal configuration error' });
+  }
+
+  const signature = req.headers.get('x-payploc-signature');
+  if (!signature) {
+    console.warn('Webhook recebido sem assinatura.');
+    return new NextResponse('Signature missing', { status: 401 });
+  }
+
   try {
-    const event = await req.json();
+    const rawBody = await req.text();
 
-    console.log('Webhook da Payploc recebido:', JSON.stringify(event, null, 2));
+    // Verificando a assinatura do webhook
+    const expectedSignature = crypto
+      .createHmac('sha256', webhookSecret)
+      .update(rawBody)
+      .digest('hex');
 
-    // Lógica para verificar a assinatura do webhook (usando o seu webhook secret)
-    // para garantir que a requisição veio da Payploc deve ser adicionada aqui.
+    if (signature !== expectedSignature) {
+      console.warn('Assinatura de webhook inválida.');
+      return new NextResponse('Invalid signature', { status: 403 });
+    }
 
-    // Verificação segura das propriedades do evento
+    const event = JSON.parse(rawBody);
+
+    console.log('Webhook da Payploc verificado e recebido:', JSON.stringify(event, null, 2));
+
     const eventType = event?.eventType;
     const data = event?.data;
     
@@ -23,8 +46,8 @@ export async function POST(req: NextRequest) {
 
       if (transactionId && status) {
         console.log(`Transação ${transactionId} atualizada para ${status}`);
-        // Aqui você atualizaria o status da transação no seu banco de dados.
-        // Ex: await updateTransactionStatus(transactionId, status);
+        // TODO: Aqui você atualizaria o status da transação no seu banco de dados.
+        // Ex: await updateTransactionStatusInDb(transactionId, status);
       } else {
         console.warn('Webhook "transaction.updated" recebido, mas falta transactionId ou status.', { data });
       }
@@ -32,18 +55,15 @@ export async function POST(req: NextRequest) {
         console.warn('Webhook recebido com formato inesperado ou sem os dados necessários.', { event });
     }
     
-    // Retorna uma resposta 200 para confirmar o recebimento do webhook.
     return NextResponse.json({ received: true });
 
   } catch (error: any) {
-    // Se o corpo estiver vazio ou não for JSON, req.json() pode falhar.
     if (error instanceof SyntaxError) {
       console.error('Erro ao processar webhook da Payploc: Corpo da requisição inválido ou não é JSON.');
       return new NextResponse('Webhook Error: Invalid request body', { status: 400 });
     }
     
     console.error('Erro interno ao processar webhook da Payploc:', error);
-    // Retorna 500 para outros erros inesperados no servidor.
     return new NextResponse(`Webhook Error: ${error.message}`, { status: 500 });
   }
 }
