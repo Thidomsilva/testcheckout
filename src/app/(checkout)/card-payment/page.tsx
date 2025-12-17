@@ -25,16 +25,16 @@ const formSchema = z.object({
     if (!match) return false;
     const month = parseInt(match[1], 10);
     const year = parseInt(`20${match[2]}`, 10);
-    
-    // Create a date for the last day of the expiry month
-    const expiryDate = new Date(year, month, 0);
-
     const now = new Date();
-    // Set current date to the first day of the month to compare correctly
-    now.setDate(1);
-    now.setHours(0, 0, 0, 0);
+    const currentMonth = now.getMonth() + 1;
+    const currentYear = now.getFullYear();
+    
+    // Check if the year is in the past
+    if (year < currentYear) return false;
+    // Check if the year is the current year and the month is in the past
+    if (year === currentYear && month < currentMonth) return false;
 
-    return expiryDate >= now;
+    return true;
   }, { message: 'Cartão expirado.' }),
   cvc: z.string().min(3, 'CVC inválido.').max(4),
   customerName: z.string().min(3, { message: "Nome do cliente é obrigatório."}),
@@ -74,7 +74,7 @@ function CardPaymentForm() {
         return;
     }
     
-    const [expiryMonth, expiryYear] = values.expiryDate.replace('/','').match(/.{1,2}/g) || [];
+    const [expiryMonth, expiryYear] = values.expiryDate.split('/');
 
     try {
       const result = await createCreditCardPayment({
@@ -87,7 +87,7 @@ function CardPaymentForm() {
             email: values.customerEmail,
             phone: values.customerPhone,
             postalCode: values.customerPostalCode,
-            addressNumber: values.customerAddressNumber,
+            addressNumber: values.customerAddressNumber as any, // A validação do Zod no servidor fará a coerção
         },
         card: {
             holderName: values.cardholderName,

@@ -63,8 +63,8 @@ export async function createPixPayment(input: CreatePixPaymentInput) {
 const cardSchema = z.object({
     holderName: z.string(),
     number: z.preprocess(onlyDigits, z.string().length(16, 'Número do cartão inválido. Deve conter 16 dígitos.')),
-    expiryMonth: z.string(),
-    expiryYear: z.string(),
+    expiryMonth: z.preprocess(onlyDigits, z.string().length(2, "Mês de validade inválido.")),
+    expiryYear: z.preprocess(onlyDigits, z.string().length(4, "Ano de validade inválido.")),
     ccv: z.string(),
 });
 
@@ -86,6 +86,8 @@ export type CreateCreditCardPaymentInput = z.infer<typeof createCreditCardPaymen
 export async function createCreditCardPayment(input: CreateCreditCardPaymentInput) {
     const validation = createCreditCardPaymentSchema.safeParse(input);
     if (!validation.success) {
+        // Log do erro detalhado no servidor para depuração
+        console.error("Erro de validação do Zod:", validation.error.flatten());
         throw new Error(validation.error.errors.map(e => e.message).join(', '));
     }
     
