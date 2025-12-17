@@ -86,7 +86,7 @@ function CardPaymentForm() {
             email: values.customerEmail,
             phone: values.customerPhone,
             postalCode: values.customerPostalCode,
-            addressNumber: values.customerAddressNumber as any,
+            addressNumber: Number(values.customerAddressNumber),
         },
         card: {
             holderName: values.cardholderName,
