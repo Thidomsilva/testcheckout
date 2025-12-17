@@ -19,18 +19,17 @@ const expiryDateRegex = /^(0[1-9]|1[0-2])\/?([0-9]{2})$/;
 
 const formSchema = z.object({
   cardholderName: z.string().min(3, { message: 'Nome deve ter pelo menos 3 caracteres.' }),
-  cardNumber: z.string().min(16, 'Número do cartão inválido. Insira 16 dígitos.').max(19),
+  cardNumber: z.string().min(19, 'Número do cartão inválido. Insira 16 dígitos.').max(19),
   expiryDate: z.string().regex(expiryDateRegex, { message: 'Data inválida (MM/AA).' }).refine(val => {
     const match = val.match(expiryDateRegex);
     if (!match) return false;
     const month = parseInt(match[1], 10);
     const year = parseInt(`20${match[2]}`, 10);
     const now = new Date();
-    // Set to the first day of the current month to avoid issues with day of month
-    now.setDate(1); 
-    const currentMonth = now.getMonth() + 1; 
     const currentYear = now.getFullYear();
-    
+    const currentMonth = now.getMonth() + 1;
+    // The card is valid until the end of the expiration month.
+    // So, if the card expires in the current month and year, it is still valid.
     if (year < currentYear) return false;
     if (year === currentYear && month < currentMonth) return false;
 
@@ -38,10 +37,10 @@ const formSchema = z.object({
   }, { message: 'Cartão expirado.' }),
   cvc: z.string().min(3, 'CVC inválido.').max(4),
   customerName: z.string().min(3, { message: "Nome do cliente é obrigatório."}),
-  customerCpf: z.string().refine(val => val.replace(/[^\d]/g, '').length === 11, { message: 'CPF inválido. Insira 11 dígitos.' }),
+  customerCpf: z.string().length(14, { message: 'CPF inválido. Insira 11 dígitos.' }),
   customerEmail: z.string().email({ message: "Email inválido." }),
-  customerPhone: z.string().refine(val => val.replace(/[^\d]/g, '').length >= 10, { message: 'Telefone inválido.' }),
-  customerPostalCode: z.string().refine(val => val.replace(/[^\d]/g, '').length === 8, { message: 'CEP inválido. Insira 8 dígitos.' }),
+  customerPhone: z.string().min(10, { message: 'Telefone inválido.' }),
+  customerPostalCode: z.string().min(8, { message: 'CEP inválido. Insira 8 dígitos.' }),
   customerAddressNumber: z.string().min(1, { message: "Número do endereço é obrigatório."}),
 });
 
@@ -87,7 +86,7 @@ function CardPaymentForm() {
             email: values.customerEmail,
             phone: values.customerPhone,
             postalCode: values.customerPostalCode,
-            addressNumber: values.customerAddressNumber as any, // A validação do Zod no servidor fará a coerção
+            addressNumber: values.customerAddressNumber as any,
         },
         card: {
             holderName: values.cardholderName,

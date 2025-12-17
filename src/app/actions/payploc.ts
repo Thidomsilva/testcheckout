@@ -88,7 +88,7 @@ export async function createCreditCardPayment(input: CreateCreditCardPaymentInpu
     if (!validation.success) {
         // Log do erro detalhado no servidor para depuração
         console.error("Erro de validação do Zod:", validation.error.flatten());
-        throw new Error(validation.error.errors.map(e => e.message).join(', '));
+        throw new Error(validation.error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join('; '));
     }
     
     try {
