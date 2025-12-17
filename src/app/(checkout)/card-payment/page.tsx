@@ -36,7 +36,7 @@ const formSchema = z.object({
   }, { message: 'Cartão expirado.' }),
   cvc: z.string().min(3, 'CVC inválido.').max(4, 'CVC inválido.'),
   customerName: z.string().min(3, { message: "Nome do cliente é obrigatório."}),
-  customerCpf: z.string().length(14, { message: 'CPF inválido. Insira 11 dígitos.' }),
+  customerCpf: z.string().min(14, { message: 'CPF inválido. Insira 11 dígitos.' }),
   customerEmail: z.string().email({ message: "Email inválido." }),
   customerPhone: z.string().min(10, { message: 'Telefone inválido.' }),
   customerPostalCode: z.string().min(8, { message: 'CEP inválido. Insira 8 dígitos.' }),
