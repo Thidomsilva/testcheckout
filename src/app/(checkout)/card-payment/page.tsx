@@ -28,11 +28,8 @@ const formSchema = z.object({
     const now = new Date();
     const currentYear = now.getFullYear();
     const currentMonth = now.getMonth() + 1;
-    // The card is valid until the end of the expiration month.
-    // So, if the card expires in the current month and year, it is still valid.
     if (year < currentYear) return false;
     if (year === currentYear && month < currentMonth) return false;
-
     return true;
   }, { message: 'Cartão expirado.' }),
   cvc: z.string().min(3, 'CVC inválido.').max(3, 'CVC inválido.'),
