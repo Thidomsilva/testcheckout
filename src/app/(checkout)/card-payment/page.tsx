@@ -26,12 +26,12 @@ const formSchema = z.object({
     const month = parseInt(match[1], 10);
     const year = parseInt(`20${match[2]}`, 10);
     const now = new Date();
-    const currentMonth = now.getMonth() + 1;
+    // Set to the first day of the current month to avoid issues with day of month
+    now.setDate(1); 
+    const currentMonth = now.getMonth() + 1; 
     const currentYear = now.getFullYear();
     
-    // Check if the year is in the past
     if (year < currentYear) return false;
-    // Check if the year is the current year and the month is in the past
     if (year === currentYear && month < currentMonth) return false;
 
     return true;
