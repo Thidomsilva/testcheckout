@@ -43,8 +43,12 @@ export async function createPixPayment(input: CreatePixPaymentInput) {
     }
     
     const data = await response.json();
+
+    // A API retorna o código do QR, não a imagem. Usamos uma API para gerar a imagem.
+    const qrCodeImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(data.pixCopyPaste)}`;
+
     return {
-      qrCodeImage: data.pixQrCode, // Assuming this is a Data URI for the image
+      qrCodeImage: qrCodeImageUrl,
       copyPasteCode: data.pixCopyPaste,
     };
   } catch (error: any) {
