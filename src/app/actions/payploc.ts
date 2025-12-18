@@ -81,7 +81,6 @@ const creditCardCustomerSchema = z.object({
     cpf_cnpj: z.string().length(11, "CPF inválido. Deve conter 11 dígitos."),
     email: z.string().email("Email inválido."),
     phone: z.string().min(10, 'Telefone inválido. Deve conter 10 ou 11 dígitos.'),
-    address: addressSchema,
 });
 
 // Schema para criação de pagamento com cartão
@@ -90,6 +89,7 @@ const createCreditCardPaymentSchema = z.object({
     description: z.string(),
     installments: z.literal(1),
     customer: creditCardCustomerSchema,
+    address: addressSchema,
     card: cardSchema,
 });
 
