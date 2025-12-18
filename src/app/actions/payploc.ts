@@ -93,7 +93,6 @@ const createCreditCardPaymentSchema = z.object({
 export type CreateCreditCardPaymentInput = z.infer<typeof createCreditCardPaymentSchema>;
 
 export async function createCreditCardPayment(input: CreateCreditCardPaymentInput) {
-    console.log('Received input:', JSON.stringify(input, null, 2));
     const validation = createCreditCardPaymentSchema.safeParse(input);
     if (!validation.success) {
         console.error("Erro de validação do Zod:", validation.error.flatten());
