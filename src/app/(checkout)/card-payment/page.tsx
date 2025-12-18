@@ -35,7 +35,7 @@ const formSchema = z.object({
     
     return true;
   }, { message: 'Cartão expirado.' }),
-  ccv: z.string().min(3, 'CVC inválido.').max(4, 'CVC pode ter até 4 dígitos.'),
+  cvv: z.string().min(3, 'CVC inválido.').max(4, 'CVC pode ter até 4 dígitos.'),
   customerName: z.string().min(3, { message: "Nome do cliente é obrigatório."}),
   customerCpf: z.string().refine((cpf) => cpf.replace(/[^\d]/g, '').length === 11, { message: "CPF inválido. Insira 11 dígitos." }),
   customerEmail: z.string().email({ message: "Email inválido." }),
@@ -54,7 +54,7 @@ function CardPaymentForm() {
       cardholderName: 'CLIENTE TESTE',
       cardNumber: '4111 1111 1111 1111',
       expiryDate: '12/30',
-      ccv: '123',
+      cvv: '123',
       customerName: 'Cliente Teste',
       customerCpf: '123.456.789-01',
       customerEmail: 'teste@exemplo.com',
@@ -63,7 +63,7 @@ function CardPaymentForm() {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log('Form values submitted:', values); // DEBUG LOG
+    console.log(values);
     const amountNumber = Number(amount);
     if (!amount || isNaN(amountNumber) || amountNumber <= 0) {
         toast({ title: 'Erro', description: 'Valor de pagamento inválido.', variant: 'destructive' });
@@ -88,7 +88,7 @@ function CardPaymentForm() {
             number: values.cardNumber,
             expiryMonth: expiryMonth,
             expiryYear: `20${expiryYear}`,
-            ccv: values.ccv,
+            cvv: values.cvv,
         }
       });
 
@@ -161,7 +161,7 @@ function CardPaymentForm() {
                         <FormMessage />
                       </FormItem>
                     )}/>
-                    <FormField control={form.control} name="ccv" render={({ field }) => (
+                    <FormField control={form.control} name="cvv" render={({ field }) => (
                       <FormItem>
                         <FormLabel>CVC</FormLabel>
                         <FormControl><Input {...field} placeholder="123" maxLength={4} /></FormControl>
