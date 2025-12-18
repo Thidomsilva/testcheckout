@@ -85,12 +85,12 @@ function CardPaymentForm() {
             phone: values.customerPhone.replace(/\D/g, ''),
         },
         address: {
-            postal_code: values.customerPostalCode.replace(/\D/g, ''),
-            street: "Rua Teste",
-            number: "123",
-            neighborhood: "Centro",
-            city: "Londrina",
-            state: "PR",
+            postal_code: "01310100",
+            street: "Avenida Paulista",
+            number: "1578",
+            neighborhood: "Bela Vista",
+            city: "São Paulo",
+            state: "SP",
         },
         card: {
             holderName: values.cardholderName,
