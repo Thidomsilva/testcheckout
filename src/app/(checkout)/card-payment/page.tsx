@@ -86,6 +86,11 @@ function CardPaymentForm() {
         },
         address: {
             postal_code: values.customerPostalCode.replace(/\D/g, ''),
+            street: "Rua Teste",
+            number: "123",
+            neighborhood: "Centro",
+            city: "Londrina",
+            state: "PR",
         },
         card: {
             holderName: values.cardholderName,

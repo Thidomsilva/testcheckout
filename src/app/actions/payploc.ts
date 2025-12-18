@@ -98,6 +98,11 @@ const creditCardCustomerSchema = z.object({
 // Schema para endereço do cliente
 const addressSchema = z.object({
     postal_code: z.string().length(8, "CEP inválido. Deve conter 8 dígitos."),
+    street: z.string().optional(),
+    number: z.string().optional(),
+    neighborhood: z.string().optional(),
+    city: z.string().optional(),
+    state: z.string().optional(),
 });
 
 // Schema para criação de pagamento com cartão
