@@ -107,7 +107,7 @@ const createCreditCardPaymentSchema = z.object({
 export type CreateCreditCardPaymentInput = z.infer<typeof createCreditCardPaymentSchema>;
 
 export async function createCreditCardPayment(input: CreateCreditCardPaymentInput) {
-    console.log('=== INICIANDO PAGAMENTO CARTÃO ===');
+    console.log('=== INICIANDO PAGAMENTO CARTÃO V2 ===');
     console.log('Input recebido:', JSON.stringify(input, null, 2));
     
     const validation = createCreditCardPaymentSchema.safeParse(input);
