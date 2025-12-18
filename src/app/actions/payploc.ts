@@ -5,9 +5,6 @@ import { z } from 'zod';
 const PAYPLOC_API_URL = 'https://sgdloeozxmbtsahygctf.supabase.co/functions/v1';
 const PAYPLOC_API_KEY = process.env.PAYPLOC_API_KEY;
 
-// Helper para remover caracteres não numéricos
-const onlyDigits = (val: string) => val.replace(/\D/g, '');
-
 // Schema para os dados do cliente para PIX
 const pixCustomerSchema = z.object({
     name: z.string().min(1, "Nome é obrigatório."),
@@ -122,7 +119,7 @@ export async function createCreditCardPayment(input: CreateCreditCardPaymentInpu
         if (!response.ok) {
             const errorData = await response.json();
             console.error('Payploc Card Error Response:', errorData);
-            throw new Error(errorData.message || JSON.stringify(errorData) || 'Erro ao processar pagamento com cartão.');
+            throw new Error(errorData.message || 'Erro ao processar pagamento com cartão.');
         }
 
         const data = await response.json();

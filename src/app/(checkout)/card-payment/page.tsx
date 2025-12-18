@@ -102,7 +102,6 @@ function CardPaymentForm() {
         throw new Error(`Pagamento ${result.status}`);
       }
     } catch (error: any) {
-      console.error("Payment failed:", error);
       toast({
         title: 'Erro no Pagamento',
         description: error.message || 'Não foi possível processar seu pagamento. Verifique os dados e tente novamente.',
