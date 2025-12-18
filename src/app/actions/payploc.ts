@@ -76,7 +76,7 @@ const cardSchema = z.object({
 // Schema para dados do cliente para Cartão de Crédito
 const creditCardCustomerSchema = z.object({
     name: z.string().min(1, "Nome é obrigatório."),
-    cpfCnpj: z.string().length(11, "CPF inválido. Deve conter 11 dígitos."),
+    cpfCnpj: z.preprocess(onlyDigits, z.string().length(11, "CPF inválido. Deve conter 11 dígitos.")),
     email: z.string().email("Email inválido."),
     phone: z.preprocess(onlyDigits, z.string().min(10, 'Telefone inválido. Deve conter 10 ou 11 dígitos.')),
     postalCode: z.preprocess(onlyDigits, z.string().length(8, 'CEP inválido. Deve conter 8 dígitos.')),
