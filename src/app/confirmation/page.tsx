@@ -3,7 +3,7 @@
 import { Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { CheckCircle, CreditCard, QrCode } from 'lucide-react';
+import { CheckCircle, CreditCard, QrCode, Calculator } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
@@ -13,15 +13,21 @@ function ConfirmationDetails() {
   const amount = searchParams.get('amount');
   const method = searchParams.get('method');
   const transactionId = searchParams.get('transactionId');
+  const installments = searchParams.get('installments');
 
   const amountNumber = Number(amount);
+  const installmentsNumber = Number(installments) || 1;
   const formattedAmount = isNaN(amountNumber)
     ? 'R$ 0,00'
     : new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(amountNumber);
+  
+  const installmentValue = installmentsNumber > 1 ? amountNumber / installmentsNumber : 0;
+  const formattedInstallmentValue = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(installmentValue);
 
   const paymentMethodDetails = {
     pix: { name: 'Pix', icon: <QrCode className="h-5 w-5" /> },
     card: { name: 'Cartão de Crédito', icon: <CreditCard className="h-5 w-5" /> },
+    installment: { name: 'Cartão Parcelado', icon: <Calculator className="h-5 w-5" /> },
   };
   
   const paymentMethodInfo = paymentMethodDetails[method as keyof typeof paymentMethodDetails] || { name: 'Desconhecido', icon: null };
@@ -38,6 +44,11 @@ function ConfirmationDetails() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="text-4xl font-bold text-foreground">{formattedAmount}</div>
+          {installmentsNumber > 1 && (
+            <div className="text-lg text-muted-foreground">
+              {installmentsNumber}x de {formattedInstallmentValue}
+            </div>
+          )}
           <Separator />
           <div className="space-y-2 text-left text-sm text-muted-foreground">
             <div className="flex justify-between items-center">
@@ -47,6 +58,14 @@ function ConfirmationDetails() {
                 {paymentMethodInfo.name}
               </span>
             </div>
+            {installmentsNumber > 1 && (
+              <div className="flex justify-between items-center">
+                <span>Parcelas:</span>
+                <span className="font-medium text-foreground">
+                  {installmentsNumber}x sem juros
+                </span>
+              </div>
+            )}
             {transactionId && (
               <div className="flex justify-between items-center">
                 <span>ID da Transação:</span>

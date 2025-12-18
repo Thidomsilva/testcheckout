@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
-import { CreditCard, QrCode } from 'lucide-react';
+import { CreditCard, QrCode, Calculator } from 'lucide-react';
 import React from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -40,11 +40,13 @@ export function PaymentForm() {
     }
   };
   
-  const handlePaymentMethod = async (method: 'card' | 'pix') => {
+  const handlePaymentMethod = async (method: 'card' | 'pix' | 'installment') => {
     const isValid = await form.trigger('amount');
     if (isValid) {
       const amountValue = form.getValues('amount');
-      const url = `/${method}-payment?amount=${amountValue}`;
+      const url = method === 'installment' 
+        ? `/installment-payment?amount=${amountValue}`
+        : `/${method}-payment?amount=${amountValue}`;
       router.push(url);
     }
   };
@@ -88,7 +90,11 @@ export function PaymentForm() {
                 </Button>
                 <Button type="button" size="lg" className="h-12" onClick={() => handlePaymentMethod('card')}>
                   <CreditCard className="mr-2" />
-                  Pagar com Cartão
+                  Pagar com Cartão à Vista
+                </Button>
+                <Button type="button" size="lg" variant="outline" className="h-12" onClick={() => handlePaymentMethod('installment')}>
+                  <Calculator className="mr-2" />
+                  Pagar Parcelado
                 </Button>
               </div>
             </form>
