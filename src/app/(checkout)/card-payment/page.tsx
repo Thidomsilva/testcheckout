@@ -41,6 +41,11 @@ const formSchema = z.object({
   customerEmail: z.string().email({ message: "Email inválido." }),
   customerPhone: z.string().min(10, { message: 'Telefone inválido.' }),
   customerPostalCode: z.string().refine((cep) => cep.replace(/[^\d]/g, '').length === 8, { message: 'CEP inválido. Insira 8 dígitos.' }),
+  customerStreet: z.string().min(3, { message: 'Rua é obrigatória.' }),
+  customerNumber: z.string().min(1, { message: 'Número é obrigatório.' }),
+  customerNeighborhood: z.string().min(2, { message: 'Bairro é obrigatório.' }),
+  customerCity: z.string().min(2, { message: 'Cidade é obrigatória.' }),
+  customerState: z.string().length(2, { message: 'UF deve ter 2 letras.' }),
 });
 
 function CardPaymentForm() {
@@ -61,6 +66,11 @@ function CardPaymentForm() {
       customerEmail: 'teste@exemplo.com',
       customerPhone: '(11) 99999-9999',
       customerPostalCode: '01310-100',
+      customerStreet: 'Avenida Paulista',
+      customerNumber: '1578',
+      customerNeighborhood: 'Bela Vista',
+      customerCity: 'São Paulo',
+      customerState: 'SP',
     },
   });
 
@@ -84,6 +94,11 @@ function CardPaymentForm() {
             email: values.customerEmail,
             phone: values.customerPhone.replace(/\D/g, ''),
             postal_code: values.customerPostalCode.replace(/\D/g, ''),
+            street: values.customerStreet,
+            number: values.customerNumber,
+            neighborhood: values.customerNeighborhood,
+            city: values.customerCity,
+            state: values.customerState.toUpperCase(),
         } as any,
         card: {
             holderName: values.cardholderName,
@@ -212,6 +227,25 @@ function CardPaymentForm() {
                               }}/></FormControl>
                               <FormMessage />
                             </FormItem>
+                        )}/>
+                    </div>
+                    <FormField control={form.control} name="customerStreet" render={({ field }) => (
+                        <FormItem><FormLabel>Rua/Avenida</FormLabel><FormControl><Input {...field} placeholder="Nome da rua" /></FormControl><FormMessage /></FormItem>
+                    )}/>
+                    <div className="grid grid-cols-3 gap-4">
+                        <FormField control={form.control} name="customerNumber" render={({ field }) => (
+                            <FormItem><FormLabel>Número</FormLabel><FormControl><Input {...field} placeholder="123" /></FormControl><FormMessage /></FormItem>
+                        )}/>
+                        <FormField control={form.control} name="customerNeighborhood" render={({ field }) => (
+                            <FormItem className="col-span-2"><FormLabel>Bairro</FormLabel><FormControl><Input {...field} placeholder="Nome do bairro" /></FormControl><FormMessage /></FormItem>
+                        )}/>
+                    </div>
+                    <div className="grid grid-cols-3 gap-4">
+                        <FormField control={form.control} name="customerCity" render={({ field }) => (
+                            <FormItem className="col-span-2"><FormLabel>Cidade</FormLabel><FormControl><Input {...field} placeholder="Nome da cidade" /></FormControl><FormMessage /></FormItem>
+                        )}/>
+                        <FormField control={form.control} name="customerState" render={({ field }) => (
+                            <FormItem><FormLabel>UF</FormLabel><FormControl><Input {...field} placeholder="SP" maxLength={2} onChange={e => field.onChange(e.target.value.toUpperCase())} /></FormControl><FormMessage /></FormItem>
                         )}/>
                     </div>
 
