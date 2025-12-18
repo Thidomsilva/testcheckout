@@ -122,7 +122,7 @@ export async function createCreditCardPayment(input: CreateCreditCardPaymentInpu
         const data = await response.json();
         return {
             status: data.status,
-            transactionId: data.transactionId,
+            transactionId: data.transactionId || data.transaction_id,
         };
     } catch (error: any) {
         console.error('Payploc Card Error:', error);

@@ -47,10 +47,12 @@ function ConfirmationDetails() {
                 {paymentMethodInfo.name}
               </span>
             </div>
-            <div className="flex justify-between items-center">
-              <span>ID da Transação:</span>
-              <span className="font-mono text-xs font-medium text-foreground bg-muted px-2 py-1 rounded-md">{transactionId}</span>
-            </div>
+            {transactionId && (
+              <div className="flex justify-between items-center">
+                <span>ID da Transação:</span>
+                <span className="font-mono text-xs font-medium text-foreground bg-muted px-2 py-1 rounded-md break-all">{transactionId}</span>
+              </div>
+            )}
           </div>
         </CardContent>
         <CardFooter className="flex-col sm:flex-row gap-4 pt-6">

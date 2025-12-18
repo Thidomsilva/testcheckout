@@ -91,7 +91,7 @@ function CardPaymentForm() {
         }
       });
 
-      if (result.status === 'paid' || result.status === 'authorized') {
+      if (result.status === 'paid' || result.status === 'authorized' || result.status === 'confirmed') {
         router.push(`/confirmation?amount=${amount}&method=card&transactionId=${result.transactionId}`);
       } else {
         throw new Error(`Pagamento ${result.status}`);
