@@ -42,8 +42,6 @@ const formSchema = z.object({
   }),
   customerEmail: z.string().email({ message: "Email inválido." }),
   customerPhone: z.string().min(10, { message: 'Telefone inválido.' }),
-  customerPostalCode: z.string().min(8, { message: 'CEP inválido. Insira 8 dígitos.' }),
-  customerAddressNumber: z.string().min(1, { message: "Número do endereço é obrigatório."}),
 });
 
 function CardPaymentForm() {
@@ -63,8 +61,6 @@ function CardPaymentForm() {
       customerCpf: '123.456.789-01',
       customerEmail: 'teste@exemplo.com',
       customerPhone: '(11) 99999-9999',
-      customerPostalCode: '01310-100',
-      customerAddressNumber: '100',
     },
   });
 
@@ -84,11 +80,9 @@ function CardPaymentForm() {
         installments: 1,
         customer: {
             name: values.customerName,
-            cpfCnpj: values.customerCpf,
+            cpf_cnpj: values.customerCpf,
             email: values.customerEmail,
             phone: values.customerPhone,
-            postalCode: values.customerPostalCode,
-            addressNumber: values.customerAddressNumber,
         },
         card: {
             holderName: values.cardholderName,
@@ -205,14 +199,6 @@ function CardPaymentForm() {
                     <FormField control={form.control} name="customerPhone" render={({ field }) => (
                         <FormItem><FormLabel>Telefone</FormLabel><FormControl><Input {...field} placeholder="(11) 99999-9999" /></FormControl><FormMessage /></FormItem>
                     )}/>
-                    <div className="grid grid-cols-3 gap-4">
-                        <FormField control={form.control} name="customerPostalCode" render={({ field }) => (
-                            <FormItem className="col-span-2"><FormLabel>CEP</FormLabel><FormControl><Input {...field} placeholder="00000-000" /></FormControl><FormMessage /></FormItem>
-                        )}/>
-                        <FormField control={form.control} name="customerAddressNumber" render={({ field }) => (
-                            <FormItem><FormLabel>Número</FormLabel><FormControl><Input {...field} placeholder="123" /></FormControl><FormMessage /></FormItem>
-                        )}/>
-                    </div>
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
