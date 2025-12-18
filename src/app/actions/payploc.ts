@@ -12,6 +12,12 @@ const pixCustomerSchema = z.object({
     cpf_cnpj: z.string().length(11, "CPF inválido. Deve conter 11 dígitos."),
     email: z.string().email("Email inválido."),
     phone: z.string().min(10, "Telefone é obrigatório."),
+    postal_code: z.string().optional(),
+    street: z.string().optional(),
+    number: z.string().optional(),
+    neighborhood: z.string().optional(),
+    city: z.string().optional(),
+    state: z.string().optional(),
 });
 
 // Schema para criação de pagamento PIX
@@ -36,6 +42,22 @@ export async function createPixPayment(input: CreatePixPaymentInput) {
 
   console.log('Criando pagamento PIX com dados:', JSON.stringify(validation.data, null, 2));
 
+  // Adiciona campos de endereço padrão caso não fornecidos
+  const payloadData = {
+    ...validation.data,
+    customer: {
+      ...validation.data.customer,
+      postal_code: validation.data.customer.postal_code || '01310-100',
+      street: validation.data.customer.street || 'Avenida Paulista',
+      number: validation.data.customer.number || '1000',
+      neighborhood: validation.data.customer.neighborhood || 'Bela Vista',
+      city: validation.data.customer.city || 'São Paulo',
+      state: validation.data.customer.state || 'SP',
+    }
+  };
+
+  console.log('Payload PIX com endereço:', JSON.stringify(payloadData, null, 2));
+
   try {
     const response = await fetch(`${PAYPLOC_API_URL}/create-pix-payment`, {
       method: 'POST',
@@ -43,7 +65,7 @@ export async function createPixPayment(input: CreatePixPaymentInput) {
         'Content-Type': 'application/json',
         'x-api-key': PAYPLOC_API_KEY,
       },
-      body: JSON.stringify(validation.data),
+      body: JSON.stringify(payloadData),
     });
 
     console.log('PayPloc PIX Response Status:', response.status);
