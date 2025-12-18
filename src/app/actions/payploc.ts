@@ -30,6 +30,8 @@ const createPixPaymentSchema = z.object({
 export type CreatePixPaymentInput = z.infer<typeof createPixPaymentSchema>;
 
 export async function createPixPayment(input: CreatePixPaymentInput) {
+  console.log('=== INICIANDO PAGAMENTO PIX V2 (COM ENDEREÇO) ===');
+  
   const validation = createPixPaymentSchema.safeParse(input);
   if (!validation.success) {
     console.error('Erro de validação:', validation.error.flatten());
