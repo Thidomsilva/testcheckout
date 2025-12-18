@@ -5,13 +5,10 @@ import { z } from 'zod';
 const PAYPLOC_API_URL = 'https://sgdloeozxmbtsahygctf.supabase.co/functions/v1';
 const PAYPLOC_API_KEY = process.env.PAYPLOC_API_KEY;
 
-// Helper to transform and validate string with only digits
-const onlyDigits = (val: unknown) => String(val).replace(/[^\d]/g, '');
-
 // Schema para os dados do cliente para PIX
 const pixCustomerSchema = z.object({
     name: z.string().min(1, "Nome é obrigatório."),
-    cpf_cnpj: z.preprocess(onlyDigits, z.string().length(11, "CPF inválido. Deve conter 11 dígitos.")),
+    cpf_cnpj: z.string().length(11, "CPF inválido. Deve conter 11 dígitos."),
     email: z.string().email("Email inválido."),
 });
 
@@ -67,10 +64,10 @@ export async function createPixPayment(input: CreatePixPaymentInput) {
 // Schema para os dados do cartão de crédito
 const cardSchema = z.object({
     holderName: z.string(),
-    number: z.preprocess(onlyDigits, z.string().length(16, 'Número do cartão inválido. Deve conter 16 dígitos.')),
+    number: z.string().length(16, 'Número do cartão inválido. Deve conter 16 dígitos.'),
     expiryMonth: z.string().length(2, "Mês de validade inválido."),
     expiryYear: z.string().length(4, "Ano de validade inválido."),
-    ccv: z.preprocess(onlyDigits, z.string().min(3, 'CVC deve ter 3 ou 4 dígitos.').max(4, 'CVC deve ter 3 ou 4 dígitos.')),
+    ccv: z.string().min(3, 'CVC deve ter 3 ou 4 dígitos.').max(4, 'CVC deve ter 3 ou 4 dígitos.'),
 });
 
 // Schema para dados do endereço
@@ -81,9 +78,9 @@ const addressSchema = z.object({
 // Schema para dados do cliente para Cartão de Crédito
 const creditCardCustomerSchema = z.object({
     name: z.string().min(1, "Nome é obrigatório."),
-    cpf_cnpj: z.preprocess(onlyDigits, z.string().length(11, "CPF inválido. Deve conter 11 dígitos.")),
+    cpf_cnpj: z.string().length(11, "CPF inválido. Deve conter 11 dígitos."),
     email: z.string().email("Email inválido."),
-    phone: z.preprocess(onlyDigits, z.string().min(10, 'Telefone inválido. Deve conter 10 ou 11 dígitos.')),
+    phone: z.string().min(10, 'Telefone inválido. Deve conter 10 ou 11 dígitos.'),
     address: addressSchema,
 });
 

@@ -80,16 +80,16 @@ function CardPaymentForm() {
         installments: 1,
         customer: {
             name: values.customerName,
-            cpf_cnpj: values.customerCpf,
+            cpf_cnpj: values.customerCpf.replace(/\D/g, ''),
             email: values.customerEmail,
-            phone: values.customerPhone,
+            phone: values.customerPhone.replace(/\D/g, ''),
             address: {
               postal_code: values.postalCode.replace(/\D/g, '')
             }
         },
         card: {
             holderName: values.cardholderName,
-            number: values.cardNumber,
+            number: values.cardNumber.replace(/\D/g, ''),
             expiryMonth: expiryMonth,
             expiryYear: `20${expiryYear}`,
             ccv: values.ccv,
