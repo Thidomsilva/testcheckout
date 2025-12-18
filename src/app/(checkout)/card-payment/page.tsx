@@ -40,6 +40,7 @@ const formSchema = z.object({
   customerCpf: z.string().refine((cpf) => cpf.replace(/[^\d]/g, '').length === 11, { message: "CPF inválido. Insira 11 dígitos." }),
   customerEmail: z.string().email({ message: "Email inválido." }),
   customerPhone: z.string().min(10, { message: 'Telefone inválido.' }),
+  postalCode: z.string().refine((cep) => cep.replace(/[^\d]/g, '').length === 8, { message: "CEP inválido. Insira 8 dígitos." }),
 });
 
 function CardPaymentForm() {
@@ -59,6 +60,7 @@ function CardPaymentForm() {
       customerCpf: '123.456.789-01',
       customerEmail: 'teste@exemplo.com',
       customerPhone: '(11) 99999-9999',
+      postalCode: '01234-567',
     },
   });
 
@@ -81,6 +83,9 @@ function CardPaymentForm() {
             cpf_cnpj: values.customerCpf,
             email: values.customerEmail,
             phone: values.customerPhone,
+            address: {
+              postal_code: values.postalCode
+            }
         },
         card: {
             holderName: values.cardholderName,
@@ -194,9 +199,22 @@ function CardPaymentForm() {
                            <FormItem><FormLabel>Email</FormLabel><FormControl><Input {...field} type="email" placeholder="seu@email.com" /></FormControl><FormMessage /></FormItem>
                         )}/>
                     </div>
-                    <FormField control={form.control} name="customerPhone" render={({ field }) => (
-                        <FormItem><FormLabel>Telefone</FormLabel><FormControl><Input {...field} placeholder="(11) 99999-9999" /></FormControl><FormMessage /></FormItem>
-                    )}/>
+                     <div className="grid grid-cols-2 gap-4">
+                        <FormField control={form.control} name="customerPhone" render={({ field }) => (
+                            <FormItem><FormLabel>Telefone</FormLabel><FormControl><Input {...field} placeholder="(11) 99999-9999" /></FormControl><FormMessage /></FormItem>
+                        )}/>
+                         <FormField control={form.control} name="postalCode" render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>CEP</FormLabel>
+                              <FormControl><Input {...field} placeholder="00000-000" onChange={e => {
+                                let value = e.target.value.replace(/\D/g, '').substring(0, 8);
+                                if (value.length > 5) { value = value.substring(0, 5) + '-' + value.substring(5); }
+                                field.onChange(value);
+                              }}/></FormControl>
+                              <FormMessage />
+                            </FormItem>
+                        )}/>
+                    </div>
                 </AccordionContent>
               </AccordionItem>
             </Accordion>

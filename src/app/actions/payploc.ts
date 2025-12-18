@@ -73,12 +73,18 @@ const cardSchema = z.object({
     ccv: z.preprocess(onlyDigits, z.string().min(3, 'CVC deve ter 3 ou 4 dígitos.').max(4, 'CVC deve ter 3 ou 4 dígitos.')),
 });
 
+// Schema para dados do endereço
+const addressSchema = z.object({
+    postal_code: z.preprocess(onlyDigits, z.string().length(8, 'CEP inválido. Deve conter 8 dígitos.')),
+});
+
 // Schema para dados do cliente para Cartão de Crédito
 const creditCardCustomerSchema = z.object({
     name: z.string().min(1, "Nome é obrigatório."),
     cpf_cnpj: z.preprocess(onlyDigits, z.string().length(11, "CPF inválido. Deve conter 11 dígitos.")),
     email: z.string().email("Email inválido."),
     phone: z.preprocess(onlyDigits, z.string().min(10, 'Telefone inválido. Deve conter 10 ou 11 dígitos.')),
+    address: addressSchema,
 });
 
 // Schema para criação de pagamento com cartão
