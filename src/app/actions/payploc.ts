@@ -74,6 +74,7 @@ export async function createPixPayment(input: CreatePixPaymentInput) {
     
     const responseText = await response.text();
     console.log('PayPloc PIX Response Body:', responseText);
+    console.log('PayPloc PIX Response Headers:', JSON.stringify([...response.headers.entries()], null, 2));
 
     if (!response.ok) {
         let errorData;
@@ -83,6 +84,11 @@ export async function createPixPayment(input: CreatePixPaymentInput) {
           errorData = { message: responseText };
         }
         console.error('Payploc PIX Error Response:', errorData);
+        console.error('Payploc PIX Error Details:', {
+          status: response.status,
+          statusText: response.statusText,
+          body: responseText
+        });
         throw new Error(errorData.message || errorData.error || 'Erro ao criar pagamento PIX.');
     }
     

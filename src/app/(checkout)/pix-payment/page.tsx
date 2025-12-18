@@ -42,7 +42,7 @@ function PixPaymentFlow() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       customerName: 'Cliente Teste',
-      customerCpf: '12345678901',
+      customerCpf: '11144477735',
       customerEmail: 'teste@exemplo.com',
       customerPhone: '11999999999',
     },
