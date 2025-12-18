@@ -93,6 +93,7 @@ const creditCardCustomerSchema = z.object({
     cpf_cnpj: z.string().length(11, "CPF inválido. Deve conter 11 dígitos."),
     email: z.string().email("Email inválido."),
     phone: z.string().min(10, 'Telefone inválido. Deve conter 10 ou 11 dígitos.'),
+    postal_code: z.string().length(8, "CEP é obrigatório. Deve conter 8 dígitos."),
 });
 
 // Schema para endereço do cliente
@@ -133,14 +134,16 @@ export async function createCreditCardPayment(input: CreateCreditCardPaymentInpu
     }
     
     try {
+        const payload = JSON.stringify(validation.data);
         console.log('Chamando API PayPloc...');
+        console.log('Payload enviado:', payload);
         const response = await fetch(`${PAYPLOC_API_URL}/create-credit-card-payment`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'x-api-key': PAYPLOC_API_KEY,
             },
-            body: JSON.stringify(validation.data),
+            body: payload,
         });
 
         console.log('Response status:', response.status);

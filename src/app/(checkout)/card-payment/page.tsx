@@ -83,7 +83,8 @@ function CardPaymentForm() {
             cpf_cnpj: values.customerCpf.replace(/\D/g, ''),
             email: values.customerEmail,
             phone: values.customerPhone.replace(/\D/g, ''),
-        },
+            postal_code: values.customerPostalCode.replace(/\D/g, ''),
+        } as any,
         card: {
             holderName: values.cardholderName,
             number: values.cardNumber.replace(/\D/g, ''),
