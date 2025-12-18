@@ -107,17 +107,23 @@ const createCreditCardPaymentSchema = z.object({
 export type CreateCreditCardPaymentInput = z.infer<typeof createCreditCardPaymentSchema>;
 
 export async function createCreditCardPayment(input: CreateCreditCardPaymentInput) {
+    console.log('=== INICIANDO PAGAMENTO CARTÃO ===');
+    console.log('Input recebido:', JSON.stringify(input, null, 2));
+    
     const validation = createCreditCardPaymentSchema.safeParse(input);
     if (!validation.success) {
         console.error("Erro de validação do Zod:", validation.error.flatten());
         throw new Error(validation.error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join('; '));
     }
     
+    console.log('Validação OK, dados:', JSON.stringify(validation.data, null, 2));
+    
     if (!PAYPLOC_API_KEY) {
         throw new Error('A chave da API da Payploc não está configurada.');
     }
     
     try {
+        console.log('Chamando API PayPloc...');
         const response = await fetch(`${PAYPLOC_API_URL}/create-credit-card-payment`, {
             method: 'POST',
             headers: {
@@ -127,13 +133,23 @@ export async function createCreditCardPayment(input: CreateCreditCardPaymentInpu
             body: JSON.stringify(validation.data),
         });
 
+        console.log('Response status:', response.status);
+        const responseText = await response.text();
+        console.log('Response body:', responseText);
+
         if (!response.ok) {
-            const errorData = await response.json();
+            let errorData;
+            try {
+                errorData = JSON.parse(responseText);
+            } catch {
+                errorData = { message: responseText };
+            }
             console.error('Payploc Card Error Response:', errorData);
-            throw new Error(errorData.message || 'Erro ao processar pagamento com cartão.');
+            throw new Error(errorData.message || errorData.error || 'Erro ao processar pagamento com cartão.');
         }
 
-        const data = await response.json();
+        const data = JSON.parse(responseText);
+        console.log('Pagamento aprovado:', data);
         return {
             status: data.status,
             transactionId: data.transaction_id,
