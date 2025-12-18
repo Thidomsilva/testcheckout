@@ -70,7 +70,7 @@ const cardSchema = z.object({
     number: z.preprocess(onlyDigits, z.string().length(16, 'Número do cartão inválido. Deve conter 16 dígitos.')),
     expiryMonth: z.string().length(2, "Mês de validade inválido."),
     expiryYear: z.string().length(4, "Ano de validade inválido."),
-    cvv: z.string().min(3, 'CVC deve ter 3 ou 4 dígitos.').max(4, 'CVC deve ter 3 ou 4 dígitos.'),
+    ccv: z.string().min(3, 'CVC deve ter 3 ou 4 dígitos.').max(4, 'CVC deve ter 3 ou 4 dígitos.'),
 });
 
 // Schema para dados do cliente para Cartão de Crédito
@@ -93,6 +93,7 @@ const createCreditCardPaymentSchema = z.object({
 export type CreateCreditCardPaymentInput = z.infer<typeof createCreditCardPaymentSchema>;
 
 export async function createCreditCardPayment(input: CreateCreditCardPaymentInput) {
+    console.log('Received input:', JSON.stringify(input, null, 2));
     const validation = createCreditCardPaymentSchema.safeParse(input);
     if (!validation.success) {
         console.error("Erro de validação do Zod:", validation.error.flatten());
