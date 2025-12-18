@@ -76,8 +76,7 @@ function CardPaymentForm() {
     }
     
     const [expiryMonth, expiryYear] = values.expiryDate.split('/');
-    const cleanCpf = values.customerCpf.replace(/[^\d]/g, '');
-
+    
     try {
       const result = await createCreditCardPayment({
         amount: amountNumber,
@@ -85,7 +84,7 @@ function CardPaymentForm() {
         installments: 1,
         customer: {
             name: values.customerName,
-            cpfCnpj: cleanCpf,
+            cpfCnpj: values.customerCpf,
             email: values.customerEmail,
             phone: values.customerPhone,
             postalCode: values.customerPostalCode,
