@@ -192,9 +192,13 @@ function CardPaymentForm() {
                               <FormMessage />
                             </FormItem>
                         )}/>
-                    <div className="grid grid-cols-2 gap-4">
                         <FormField control={form.control} name="customerEmail" render={({ field }) => (
                            <FormItem><FormLabel>Email</FormLabel><FormControl><Input {...field} type="email" placeholder="seu@email.com" /></FormControl><FormMessage /></FormItem>
+                        )}/>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                        <FormField control={form.control} name="customerPhone" render={({ field }) => (
+                            <FormItem><FormLabel>Telefone</FormLabel><FormControl><Input {...field} placeholder="(11) 99999-9999" /></FormControl><FormMessage /></FormItem>
                         )}/>
                         <FormField control={form.control} name="customerPostalCode" render={({ field }) => (
                             <FormItem>
@@ -210,9 +214,6 @@ function CardPaymentForm() {
                             </FormItem>
                         )}/>
                     </div>
-                    <FormField control={form.control} name="customerPhone" render={({ field }) => (
-                        <FormItem><FormLabel>Telefone</FormLabel><FormControl><Input {...field} placeholder="(11) 99999-9999" /></FormControl><FormMessage /></FormItem>
-                    )}/>
 
                 </AccordionContent>
               </AccordionItem>
