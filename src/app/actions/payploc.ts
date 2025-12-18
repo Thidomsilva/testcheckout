@@ -1,5 +1,6 @@
 'use server';
 
+import 'dotenv/config';
 import { z } from 'zod';
 
 const PAYPLOC_API_URL = 'https://sgdloeozxmbtsahygctf.supabase.co/functions/v1';
