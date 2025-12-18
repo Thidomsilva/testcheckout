@@ -63,7 +63,6 @@ function CardPaymentForm() {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
     const amountNumber = Number(amount);
     if (!amount || isNaN(amountNumber) || amountNumber <= 0) {
         toast({ title: 'Erro', description: 'Valor de pagamento inválido.', variant: 'destructive' });
