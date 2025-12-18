@@ -40,6 +40,7 @@ const formSchema = z.object({
   customerCpf: z.string().refine((cpf) => cpf.replace(/[^\d]/g, '').length === 11, { message: "CPF inválido. Insira 11 dígitos." }),
   customerEmail: z.string().email({ message: "Email inválido." }),
   customerPhone: z.string().min(10, { message: 'Telefone inválido.' }),
+  customerPostalCode: z.string().refine((cep) => cep.replace(/[^\d]/g, '').length === 8, { message: 'CEP inválido. Insira 8 dígitos.' }),
 });
 
 function CardPaymentForm() {
@@ -59,6 +60,7 @@ function CardPaymentForm() {
       customerCpf: '123.456.789-01',
       customerEmail: 'teste@exemplo.com',
       customerPhone: '(11) 99999-9999',
+      customerPostalCode: '01310-100',
     },
   });
 
@@ -81,6 +83,7 @@ function CardPaymentForm() {
             cpf_cnpj: values.customerCpf.replace(/\D/g, ''),
             email: values.customerEmail,
             phone: values.customerPhone.replace(/\D/g, ''),
+            postal_code: values.customerPostalCode.replace(/\D/g, ''),
         },
         card: {
             holderName: values.cardholderName,
@@ -189,8 +192,22 @@ function CardPaymentForm() {
                               <FormMessage />
                             </FormItem>
                         )}/>
+                    <div className="grid grid-cols-2 gap-4">
                         <FormField control={form.control} name="customerEmail" render={({ field }) => (
                            <FormItem><FormLabel>Email</FormLabel><FormControl><Input {...field} type="email" placeholder="seu@email.com" /></FormControl><FormMessage /></FormItem>
+                        )}/>
+                        <FormField control={form.control} name="customerPostalCode" render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>CEP</FormLabel>
+                              <FormControl><Input {...field} placeholder="00000-000" onChange={e => {
+                                let value = e.target.value.replace(/\D/g, '').substring(0, 8);
+                                if (value.length > 5) {
+                                  value = value.replace(/(\d{5})(\d)/, '$1-$2');
+                                }
+                                field.onChange(value);
+                              }}/></FormControl>
+                              <FormMessage />
+                            </FormItem>
                         )}/>
                     </div>
                     <FormField control={form.control} name="customerPhone" render={({ field }) => (
