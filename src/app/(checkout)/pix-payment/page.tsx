@@ -148,7 +148,7 @@ function PixPaymentFlow() {
         <CardTitle className="flex items-center gap-2 font-headline"><QrCode /> Pagar com Pix</CardTitle>
         <CardDescription>
           Confirme seus dados para gerar o código Pix no valor de <span className="font-bold text-foreground">{formattedAmount}</span>.
-        </d>
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
