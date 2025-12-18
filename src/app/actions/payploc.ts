@@ -123,7 +123,7 @@ const createCreditCardPaymentSchema = z.object({
 export type CreateCreditCardPaymentInput = z.infer<typeof createCreditCardPaymentSchema>;
 
 export async function createCreditCardPayment(input: CreateCreditCardPaymentInput) {
-    console.log('=== INICIANDO PAGAMENTO CARTÃO V4 (COM POSTAL_CODE) ===');
+    console.log('=== INICIANDO PAGAMENTO CARTÃO V5 (ESTRUTURA AJUSTADA) ===');
     console.log('Input recebido:', JSON.stringify(input, null, 2));
     
     const validation = createCreditCardPaymentSchema.safeParse(input);
@@ -138,17 +138,26 @@ export async function createCreditCardPayment(input: CreateCreditCardPaymentInpu
         throw new Error('A chave da API da Payploc não está configurada.');
     }
     
-    // Adiciona valores padrão para campos opcionais de endereço
+    // Reestrutura o payload para corresponder ao formato esperado pela API
     const payloadData = {
-        ...validation.data,
+        amount: validation.data.amount,
+        description: validation.data.description,
+        installments: validation.data.installments,
         customer: {
-            ...validation.data.customer,
-            street: validation.data.customer.street || 'Não informado',
-            number: validation.data.customer.number || 'S/N',
-            neighborhood: validation.data.customer.neighborhood || 'Não informado',
-            city: validation.data.customer.city || 'Não informado',
-            state: validation.data.customer.state || 'SP',
-        }
+            name: validation.data.customer.name,
+            cpf_cnpj: validation.data.customer.cpf_cnpj,
+            email: validation.data.customer.email,
+            phone: validation.data.customer.phone,
+            address: {
+                postal_code: validation.data.customer.postal_code,
+                street: validation.data.customer.street || 'Rua Exemplo',
+                number: validation.data.customer.number || '100',
+                neighborhood: validation.data.customer.neighborhood || 'Centro',
+                city: validation.data.customer.city || 'São Paulo',
+                state: validation.data.customer.state || 'SP',
+            }
+        },
+        card: validation.data.card,
     };
     
     try {
