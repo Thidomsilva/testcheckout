@@ -22,6 +22,7 @@ const formSchema = z.object({
   customerName: z.string().min(3, { message: 'Nome do cliente é obrigatório.' }),
   customerCpf: z.string().refine((val) => val.replace(/[^\d]/g, '').length === 11, { message: 'CPF inválido. Insira 11 dígitos.' }),
   customerEmail: z.string().email({ message: 'Email inválido.' }),
+  customerPhone: z.string().min(10, { message: 'Telefone inválido.' }),
 });
 
 function PixPaymentFlow() {
@@ -43,6 +44,7 @@ function PixPaymentFlow() {
       customerName: 'Cliente Teste',
       customerCpf: '12345678901',
       customerEmail: 'teste@exemplo.com',
+      customerPhone: '11999999999',
     },
   });
 
@@ -63,6 +65,7 @@ function PixPaymentFlow() {
           name: values.customerName,
           cpf_cnpj: values.customerCpf,
           email: values.customerEmail,
+          phone: values.customerPhone.replace(/\D/g, ''),
         },
       };
       const result = await createPixPayment(paymentInput);
@@ -163,12 +166,15 @@ function PixPaymentFlow() {
             <FormField control={form.control} name="customerName" render={({ field }) => (
                 <FormItem><FormLabel>Nome Completo</FormLabel><FormControl><Input {...field} placeholder="Seu Nome" /></FormControl><FormMessage /></FormItem>
             )}/>
+            <FormField control={form.control} name="customerCpf" render={({ field }) => (
+                <FormItem><FormLabel>CPF</FormLabel><FormControl><Input {...field} placeholder="Apenas números" maxLength={11} /></FormControl><FormMessage /></FormItem>
+            )}/>
             <div className="grid grid-cols-2 gap-4">
-                <FormField control={form.control} name="customerCpf" render={({ field }) => (
-                    <FormItem><FormLabel>CPF</FormLabel><FormControl><Input {...field} placeholder="Apenas números" maxLength={11} /></FormControl><FormMessage /></FormItem>
-                )}/>
                 <FormField control={form.control} name="customerEmail" render={({ field }) => (
                     <FormItem><FormLabel>Email</FormLabel><FormControl><Input {...field} type="email" placeholder="seu@email.com" /></FormControl><FormMessage /></FormItem>
+                )}/>
+                <FormField control={form.control} name="customerPhone" render={({ field }) => (
+                    <FormItem><FormLabel>Telefone</FormLabel><FormControl><Input {...field} placeholder="(11) 99999-9999" /></FormControl><FormMessage /></FormItem>
                 )}/>
             </div>
             <Button type="submit" className="w-full h-11" disabled={isLoading}>
