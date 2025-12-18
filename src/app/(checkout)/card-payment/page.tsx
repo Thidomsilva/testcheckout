@@ -84,7 +84,7 @@ function CardPaymentForm() {
             email: values.customerEmail,
             phone: values.customerPhone,
             address: {
-              postal_code: values.postalCode
+              postal_code: values.postalCode.replace(/\D/g, '')
             }
         },
         card: {

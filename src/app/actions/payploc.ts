@@ -75,7 +75,7 @@ const cardSchema = z.object({
 
 // Schema para dados do endereço
 const addressSchema = z.object({
-    postal_code: z.preprocess(onlyDigits, z.string().length(8, 'CEP inválido. Deve conter 8 dígitos.')),
+    postal_code: z.string().length(8, 'CEP inválido. Deve conter 8 dígitos.'),
 });
 
 // Schema para dados do cliente para Cartão de Crédito
