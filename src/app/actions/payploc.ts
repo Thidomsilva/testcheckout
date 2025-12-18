@@ -138,6 +138,12 @@ export async function createCreditCardPayment(input: CreateCreditCardPaymentInpu
         throw new Error('A chave da API da Payploc não está configurada.');
     }
     
+    // Formata o CEP com hífen (XXXXX-XXX)
+    const postalCode = validation.data.customer.postal_code;
+    const formattedPostalCode = postalCode.length === 8 
+        ? `${postalCode.substring(0, 5)}-${postalCode.substring(5)}` 
+        : postalCode;
+    
     // Reestrutura o payload para corresponder ao formato esperado pela API
     const payloadData = {
         amount: validation.data.amount,
@@ -149,7 +155,7 @@ export async function createCreditCardPayment(input: CreateCreditCardPaymentInpu
             email: validation.data.customer.email,
             phone: validation.data.customer.phone,
             address: {
-                postal_code: validation.data.customer.postal_code,
+                postal_code: formattedPostalCode,
                 street: validation.data.customer.street || 'Rua Exemplo',
                 number: validation.data.customer.number || '100',
                 neighborhood: validation.data.customer.neighborhood || 'Centro',
