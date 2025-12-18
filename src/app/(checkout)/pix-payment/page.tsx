@@ -61,7 +61,7 @@ function PixPaymentFlow() {
         description: `Pagamento FlexiPay no valor de R$ ${amountNumber.toFixed(2)}`,
         customer: {
           name: values.customerName,
-          cpfCnpj: values.customerCpf,
+          cpf_cnpj: values.customerCpf,
           email: values.customerEmail,
         },
       };

@@ -11,7 +11,7 @@ const onlyDigits = (val: unknown) => String(val).replace(/[^\d]/g, '');
 // Schema para os dados do cliente para PIX
 const pixCustomerSchema = z.object({
     name: z.string().min(1, "Nome é obrigatório."),
-    cpfCnpj: z.preprocess(onlyDigits, z.string().length(11, "CPF inválido. Deve conter 11 dígitos.")),
+    cpf_cnpj: z.preprocess(onlyDigits, z.string().length(11, "CPF inválido. Deve conter 11 dígitos.")),
     email: z.string().email("Email inválido."),
 });
 
