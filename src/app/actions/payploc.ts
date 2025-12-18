@@ -116,7 +116,7 @@ export async function createCreditCardPayment(input: CreateCreditCardPaymentInpu
         if (!response.ok) {
             const errorData = await response.json();
             console.error('Payploc Card Error Response:', errorData);
-            throw new Error(errorData.message || 'Erro ao processar pagamento com cartão.');
+            throw new Error(errorData.message || JSON.stringify(errorData) || 'Erro ao processar pagamento com cartão.');
         }
 
         const data = await response.json();
