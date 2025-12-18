@@ -94,6 +94,11 @@ const creditCardCustomerSchema = z.object({
     email: z.string().email("Email inválido."),
     phone: z.string().min(10, 'Telefone inválido. Deve conter 10 ou 11 dígitos.'),
     postal_code: z.string().length(8, "CEP é obrigatório. Deve conter 8 dígitos."),
+    street: z.string().optional(),
+    number: z.string().optional(),
+    neighborhood: z.string().optional(),
+    city: z.string().optional(),
+    state: z.string().optional(),
 });
 
 // Schema para endereço do cliente
@@ -133,8 +138,21 @@ export async function createCreditCardPayment(input: CreateCreditCardPaymentInpu
         throw new Error('A chave da API da Payploc não está configurada.');
     }
     
+    // Adiciona valores padrão para campos opcionais de endereço
+    const payloadData = {
+        ...validation.data,
+        customer: {
+            ...validation.data.customer,
+            street: validation.data.customer.street || 'Não informado',
+            number: validation.data.customer.number || 'S/N',
+            neighborhood: validation.data.customer.neighborhood || 'Não informado',
+            city: validation.data.customer.city || 'Não informado',
+            state: validation.data.customer.state || 'SP',
+        }
+    };
+    
     try {
-        const payload = JSON.stringify(validation.data);
+        const payload = JSON.stringify(payloadData);
         console.log('Chamando API PayPloc...');
         console.log('Payload enviado:', payload);
         const response = await fetch(`${PAYPLOC_API_URL}/create-credit-card-payment`, {
